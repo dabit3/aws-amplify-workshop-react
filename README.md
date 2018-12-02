@@ -784,9 +784,9 @@ amplify publish
 
 You can create multiple environments for your application in which to create & test out new features without affecting the main environment which you are working on.
 
-When you create a new environment, you are given a copy of the entire stack in which you are working. When you make changes, you are then able to test them in the new environment & merge only the changes that have been made that have been created or updated since the new environment was created.
+When you create a new environment from an existing environment, you are given a copy of the entire backend application stack from the original project. When you make changes in the new environment, you are then able to test these new changes in the new environment & merge only the changes that have been made since the new environment was created back into the original environment.
 
-Let's take a look at how to create a new environment to reconfigure the GraphQL API to have another field for the pet owner.
+Let's take a look at how to create a new environment. In this new environment, we'll reconfigure the GraphQL Schema to have another field for the pet owner.
 
 First, we'll initialize a new environment using `amplify init`:
 
@@ -803,9 +803,7 @@ Once the new environment is initialized, we should be able to see some informati
 
 ```sh
 amplify env list
-```
 
-```sh
  Environments |
 | ------------ |
 | dev          |
@@ -852,9 +850,9 @@ amplify add analytics
 
 > Next, we'll be prompted for the following:
 
-? Provide your pinpoint resource name: __amplifyanalytics__   
-? Apps need authorization to send analytics events. Do you want to allow guest/unauthenticated users to send analytics events (recommended when getting started)? __Y__   
-? overwrite YOURFILEPATH-cloudformation-template.yml __Y__
+- Provide your pinpoint resource name: __amplifyanalytics__   
+- Apps need authorization to send analytics events. Do you want to allow guest/unauthenticated users to send analytics events (recommended when getting started)? __Y__   
+- overwrite YOURFILEPATH-cloudformation-template.yml __Y__
 
 ### Recording events
 

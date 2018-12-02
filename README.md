@@ -470,18 +470,8 @@ To do so, we need to define the query, execute the query, store the data in our 
 // imports from Amplify library
 import { API, graphqlOperation } from 'aws-amplify'
 
-// define query
-const ListPets = `
-  query {
-    listPets {
-      items {
-        id
-        name
-        description
-      }
-    }
-  }
-`
+// import query
+import { listPets as ListPets } from './graphql/queries'
 
 // define some state to hold the data returned from the API
 state = {

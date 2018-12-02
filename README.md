@@ -585,7 +585,7 @@ API.graphql(
 
 ### Adding Authorization to the GraphQL API (Advanced, optional)
 
-To add authorization to the API, we can reconfigure the API to use our cognito identity pool. To do so, we can run `amplify configure api`:
+To add authorization to the API, we can re-configure the API to use our cognito identity pool. To do so, we can run `amplify configure api`:
 
 ```sh
 amplify configure api

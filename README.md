@@ -786,7 +786,7 @@ You can create multiple environments for your application in which to create & t
 
 When you create a new environment from an existing environment, you are given a copy of the entire backend application stack from the original project. When you make changes in the new environment, you are then able to test these new changes in the new environment & merge only the changes that have been made since the new environment was created back into the original environment.
 
-Let's take a look at how to create a new environment. In this new environment, we'll reconfigure the GraphQL Schema to have another field for the pet owner.
+Let's take a look at how to create a new environment. In this new environment, we'll re-configure the GraphQL Schema to have another field for the pet owner.
 
 First, we'll initialize a new environment using `amplify init`:
 

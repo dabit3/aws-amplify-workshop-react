@@ -560,18 +560,12 @@ Next, let's see how we can create a subscription to subscribe to changes of data
 To do so, we need to define the subscription, listen for the subscription, & update the state whenever a new piece of data comes in through the subscription.
 
 ```js
-// define the subscription
-const SubscribeToNewPets = `subscription {
-  onCreatePet {
-    id
-    name
-    description
-  }
-}`;
+// import the subscription
+import { onCreatePet as OnCreatePet } from './graphql/subscriptions'
 
 // subscribe in componentDidMount
 API.graphql(
-  graphqlOperation(SubscribeToNewPets)
+  graphqlOperation(OnCreatePet)
 ).subscribe({
     next: (eventData) => {
       console.log('eventData', eventData)

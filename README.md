@@ -6,13 +6,14 @@ In this workshop we'll learn how to build cloud-enabled web applications with Re
 
 ### Topics we'll be covering:
 
-- [Authentication](https://github.com/dabit3/aws-amplify-workshop-web#adding-authentication)
-- [GraphQL API with AWS AppSync](https://github.com/dabit3/aws-amplify-workshop-web#adding-a-rest-api)
-- [REST API with a Lambda Function](https://github.com/dabit3/aws-amplify-workshop-web#adding-a-graphql-api)
-- [Adding Storage with Amazon S3](https://github.com/dabit3/aws-amplify-workshop-web#working-with-storage)
-- [Hosting](https://github.com/dabit3/aws-amplify-workshop-web#hosting)
-- [Analytics](https://github.com/dabit3/aws-amplify-workshop-web#adding-analytics)
-- [Removing / Deleting Services](https://github.com/dabit3/aws-amplify-workshop-web#removing-services)
+- [Authentication](https://github.com/dabit3/aws-amplify-workshop-react#adding-authentication)
+- [REST API with a Lambda Function](https://github.com/dabit3/aws-amplify-workshop-react#adding-a-graphql-api)
+- [GraphQL API with AWS AppSync](https://github.com/dabit3/aws-amplify-workshop-react#adding-a-rest-api)
+- [Adding Storage with Amazon S3](https://github.com/dabit3/aws-amplify-workshop-react#working-with-storage)
+- [Hosting](https://github.com/dabit3/aws-amplify-workshop-react#hosting)
+- [Analytics](https://github.com/dabit3/aws-amplify-workshop-react#adding-analytics)
+- [Multiple Environments](https://github.com/dabit3/aws-amplify-workshop-react#multiple-environments)
+- [Removing / Deleting Services](https://github.com/dabit3/aws-amplify-workshop-react#removing-services)
 
 <!-- ## Redeeming our AWS Credit   
 

@@ -804,7 +804,7 @@ Once the new environment is initialized, we should be able to see some informati
 ```sh
 amplify env list
 
- Environments |
+| Environments |
 | ------------ |
 | dev          |
 | *apiupdate   |

@@ -819,7 +819,7 @@ type Pet @model {
   id: ID!
   name: String!
   description: String
-  owner: String
+  owner: String #new
 }
 ```
 

@@ -246,8 +246,8 @@ app.get('/pets', function(req, res) {
 ```
 
 - Restrict API access __Y__
-- Who should have access? Authenticated users only
-- What kind of access do you want for Authenticated users read/write
+- Who should have access? __Authenticated users only__
+- What kind of access do you want for Authenticated users __read/write__
 - Do you want to add another path? (y/N) __N__     
 
 > Now the resources have been created & configured & we can push them to our account: 

@@ -13,6 +13,7 @@ In this workshop we'll learn how to build cloud-enabled web applications with Re
 - [Hosting](https://github.com/dabit3/aws-amplify-workshop-react#hosting)
 - [Analytics](https://github.com/dabit3/aws-amplify-workshop-react#adding-analytics)
 - [Multiple Environments](https://github.com/dabit3/aws-amplify-workshop-react#multiple-environments)
+- [Deploying via the Amplify Console](https://github.com/dabit3/aws-amplify-workshop-react#amplify-console)
 - [Removing / Deleting Services](https://github.com/dabit3/aws-amplify-workshop-react#removing-services)
 
 <!-- ## Redeeming our AWS Credit   
@@ -56,7 +57,7 @@ yarn add aws-amplify aws-amplify-react
 Next, we'll install the AWS Amplify CLI:
 
 ```bash
-npm install -g @aws-amplify/cli
+npm install -g @aws-amplify/cli@multienv
 ```
 
 Now we need to configure the CLI with our credentials:
@@ -68,13 +69,13 @@ amplify configure
 > If you'd like to see a video walkthrough of this configuration process, click [here](https://www.youtube.com/watch?v=fWbM5DLh25U).
 
 Here we'll walk through the `amplify configure` setup. Once you've signed in to the AWS console, continue:
-- Specify the AWS Region: __us-east-1__
+- Specify the AWS Region: __eu-central-1__
 - Specify the username of the new IAM user: __amplify-workshop-user__
-> In the AWS Console, click __Next: Permissions__, __Next: Review__, & __Create User__ to create the new IAM user. Then, return to the command line & press Enter.
+> In the AWS Console, click __Next: Permissions__, __Next: Tags__, __Next: Review__, & __Create User__ to create the new IAM user. Then, return to the command line & press Enter.
 - Enter the access key of the newly created user:   
   accessKeyId: __(<YOUR_ACCESS_KEY_ID>)__   
   secretAccessKey:  __(<YOUR_SECRET_ACCESS_KEY>)__
-- Profile Name: __(default)__
+- Profile Name: __(amplify-workshop-user)__
 
 ### Initializing A New Project
 
@@ -82,6 +83,8 @@ Here we'll walk through the `amplify configure` setup. Once you've signed in to 
 amplify init
 ```
 
+- Enter a name for the project: __amplifyreactapp__
+- Enter a name for the environment: __dev__
 - Choose your default editor: __Visual Studio Code (or your default editor)__   
 - Please choose the type of app that you're building __javascript__   
 - What javascript framework are you using __react__   
@@ -90,9 +93,9 @@ amplify init
 - Build Command: __npm run-script build__   
 - Start Command: __npm run-script start__   
 - Do you want to use an AWS profile? __Y__
-- Please choose the profile you want to use: __default__
+- Please choose the profile you want to use: __amplify-workshop-user__
 
-Now, the AWS Amplify CLI has iniatilized a new project & you will see a couple of new files & folders: __amplify__ & __.amplifyrc__. These files hold your project configuration.
+Now, the AWS Amplify CLI has iniatilized a new project & you will see a new folder: __amplify__. The files in this folder hold your project configuration.
 
 
 ## Adding Authentication

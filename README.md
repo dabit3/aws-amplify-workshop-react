@@ -75,7 +75,7 @@ Here we'll walk through the `amplify configure` setup. Once you've signed in to 
 - Enter the access key of the newly created user:   
   accessKeyId: __(<YOUR_ACCESS_KEY_ID>)__   
   secretAccessKey:  __(<YOUR_SECRET_ACCESS_KEY>)__
-- Profile Name: __(amplify-workshop-user)__
+- Profile Name: __amplify-workshop-user__
 
 ### Initializing A New Project
 
@@ -143,7 +143,7 @@ import { withAuthenticator } from 'aws-amplify-react'
 Next, we'll wrap our default export (the App component) with the `withAuthenticator` HOC:
 
 ```js
-export default withAuthenticator(App)
+export default withAuthenticator(App, { includeGreetings: true })
 ```
 
 Now, we can run the app and see that an Authentication flow has been added in front of our App component. This flow gives users the ability to sign up & sign in.

@@ -812,14 +812,14 @@ amplify env list
 | *apiupdate   |
 ```
 
-Now we can update the GraphQL Schema in `amplify/backend/api/GraphQLPets/schema.graphql` to the following:
+Now we can update the GraphQL Schema in `amplify/backend/api/GraphQLPets/schema.graphql` to the following (adding the owner field):
 
 ```graphql
 type Pet @model {
   id: ID!
   name: String!
   description: String
-  owner: String #new
+  owner: String
 }
 ```
 

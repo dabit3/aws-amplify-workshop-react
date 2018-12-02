@@ -507,37 +507,13 @@ async componentDidMount() {
  Now, let's look at how we can create mutations.
 
 ```js
-import { graphqlOperation, API } from 'aws-amplify'
-
-// define the new mutation
-const CreatePet = `
-  mutation($name: String!, $description: String) {
-    createPet(input: {
-      name: $name, description: $description
-    }) {
-      id
-      name
-      description
-    }
-  }
-`
+// import the mutation
+import { createPet as CreatePet } from './graphql/mutations'
 
 // create initial state
 state = {
   name: '', description: '', pets: []
 }
-
-async componentDidMount() {
-  try {
-    const pets = await API.graphql(graphqlOperation(ListPets))
-    console.log('pets:', pets)
-    this.setState({
-      pets: pets.data.listPets.items
-    })
-  } catch (err) {
-    console.log('error fetching pets...', err)
-  }
-}  
 
 createPet = async() => {
   const { name, description } = this.state
@@ -549,7 +525,7 @@ createPet = async() => {
   const updatedPetArray = [...this.state.pets, pet]
   this.setState({ pets: updatedPetArray })
   try {
-    await API.graphql(graphqlOperation(CreatePet, pet))
+    await API.graphql(graphqlOperation(CreatePet, { input: pet }))
     console.log('item created!')
   } catch (err) {
     console.log('error creating pet...', err)

@@ -12,7 +12,7 @@ In this workshop we'll learn how to build cloud-enabled web applications with Re
 - [Adding Storage with Amazon S3](https://github.com/dabit3/aws-amplify-workshop-react#working-with-storage)
 - [Hosting](https://github.com/dabit3/aws-amplify-workshop-react#hosting)
 - [Analytics](https://github.com/dabit3/aws-amplify-workshop-react#adding-analytics)
-- [Multiple Environments](https://github.com/dabit3/aws-amplify-workshop-react#multiple-environments)
+- [Multiple Environments](https://github.com/dabit3/aws-amplify-workshop-react#working-with-multiple-environments)
 - [Deploying via the Amplify Console](https://github.com/dabit3/aws-amplify-workshop-react#amplify-console)
 - [Removing / Deleting Services](https://github.com/dabit3/aws-amplify-workshop-react#removing-services)
 
@@ -583,6 +583,57 @@ API.graphql(
 });
 ```
 
+### Adding Authorization to the GraphQL API (Advanced, optional)
+
+To add authorization to the API, we can reconfigure the API to use our cognito identity pool. To do so, we can run `amplify configure api`:
+
+```sh
+amplify configure api
+```
+Please select from one of the below mentioned services: __GraphQL__
+Choose an authorization type for the API: __Amazon Cognito User Pool__
+
+Next, we'll run `amplify push`:
+
+```sh
+amplify push
+```
+
+Now, we can only access the API with a logged in user.
+
+_Let's how how we can access the user's identity in the resolver._
+
+To do so, open the AWS AppSync dashboard for the API, click __Schema__, & open the resolver for the `createPet` mutation.
+
+Here in the __Request mapping template__, update the resolver to add the following:
+
+```js
+$util.qr($context.args.input.put("userId", $context.identity.sub))
+$util.qr($context.args.input.put("username", $context.identity.username))
+```
+
+Now when we create items, the user's identity is stored with each request.
+
+Next, we need to add an index on the table holding the pet data. Open the Data Sources tab & click on the DynamoDB table link. From the DynamoDB table view, click on __indexes__ & __Create Index__.
+
+Here, create a new index. The partition key should be __userId__ & the index name needs to be __userId-index__.
+
+We can now query on the userId index, only fetching data for the logged-in user:
+
+```js
+{
+    "version" : "2017-02-28",
+    "operation" : "Query",
+    "index": "userId-index",
+    "query" : {
+        "expression": "userId = :userId",
+        "expressionValues" : {
+            ":userId" : $util.dynamodb.toDynamoDBJson($ctx.identity.sub)
+        }
+    }
+}
+```
+
 ## Working with Storage
 
 To add storage, we can use the following command:
@@ -731,7 +782,65 @@ amplify publish
 
 ## Working with multiple environments
 
+You can create multiple environments for your application in which to create & test out new features without affecting the main environment which you are working on.
 
+When you create a new environment, you are given a copy of the entire stack in which you are working. When you make changes, you are then able to test them in the new environment & merge only the changes that have been made that have been created or updated since the new environment was created.
+
+Let's take a look at how to create a new environment to reconfigure the GraphQL API to have another field for the pet owner.
+
+First, we'll initialize a new environment using `amplify init`:
+
+```sh
+amplify init
+```
+
+- Do you want to use an existing environment? __N__
+- Enter a name for the environment: __apiupdate__
+- Do you want to use an AWS profile? __Y__
+- __amplify-workshop-user__
+
+Once the new environment is initialized, we should be able to see some information about our environment setup by running:
+
+```sh
+amplify env list
+```
+
+```sh
+ Environments |
+| ------------ |
+| dev          |
+| *apiupdate   |
+```
+
+Now we can update the GraphQL Schema in `amplify/backend/api/GraphQLPets/schema.graphql` to the following:
+
+```graphql
+type Pet @model {
+  id: ID!
+  name: String!
+  description: String
+  owner: String
+}
+```
+
+Now, we can create this new stack by running `amplify push`:
+
+```sh
+amplify push
+```
+
+After we test it out, we can now merge it into our original dev environment:
+
+```sh
+amplify env checkout dev
+
+amplify status
+
+amplify push
+```
+
+- Do you want to update code for your updated GraphQL API? __Y__
+- Do you want to generate GraphQL statements? __Y__
 
 ## Adding Analytics
 

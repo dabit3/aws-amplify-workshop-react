@@ -635,6 +635,8 @@ addToStorage = () => {
 
 This would create a folder called `javascript` in our S3 bucket & store a file called __MyReactComponent.js__ there with the code we specified in the second argument of `Storage.put`.
 
+> To view the new S3 Bucket at any time after its creation, go to the dashboard at [https://s3.console.aws.amazon.com/s3/home](https://s3.console.aws.amazon.com/s3/home).
+
 If we want to read everything from this folder, we can use `Storage.list`:
 
 ```js
@@ -683,13 +685,29 @@ class S3ImageUpload extends React.Component {
   render() {
       return (
           <input
-              type="file" accept='image/png'
+              type="file" accept='image'
               onChange={(e) => this.onChange(e)}
           />
       )
   }
 }
 
+```
+
+We can even use the S3Album component, one of a few components in the AWS Amplify React library to create a preconfigured photo picker:
+
+```js
+import { S3Album, withAuthenticator } from 'aws-amplify-react'
+
+class App extends Component {
+  render() {
+    return (
+      <div className="App">
+        <S3Album path={''} picker />
+      </div>
+    );
+  }
+}
 ```
 
 ## Hosting
@@ -710,6 +728,10 @@ Now, everything is set up & we can publish it:
 ```sh
 amplify publish
 ```
+
+## Working with multiple environments
+
+
 
 ## Adding Analytics
 

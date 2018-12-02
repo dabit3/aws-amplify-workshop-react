@@ -7,8 +7,8 @@ In this workshop we'll learn how to build cloud-enabled web applications with Re
 ### Topics we'll be covering:
 
 - [Authentication](https://github.com/dabit3/aws-amplify-workshop-react#adding-authentication)
-- [REST API with a Lambda Function](https://github.com/dabit3/aws-amplify-workshop-react#adding-a-graphql-api)
-- [GraphQL API with AWS AppSync](https://github.com/dabit3/aws-amplify-workshop-react#adding-a-rest-api)
+- [REST API with a Lambda Function](https://github.com/dabit3/aws-amplify-workshop-react#adding-a-rest-api)
+- [GraphQL API with AWS AppSync](https://github.com/dabit3/aws-amplify-workshop-react#adding-a-graphql-api)
 - [Adding Storage with Amazon S3](https://github.com/dabit3/aws-amplify-workshop-react#working-with-storage)
 - [Hosting](https://github.com/dabit3/aws-amplify-workshop-react#hosting)
 - [Analytics](https://github.com/dabit3/aws-amplify-workshop-react#adding-analytics)

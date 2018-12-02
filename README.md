@@ -16,13 +16,13 @@ In this workshop we'll learn how to build cloud-enabled web applications with Re
 - [Deploying via the Amplify Console](https://github.com/dabit3/aws-amplify-workshop-react#amplify-console)
 - [Removing / Deleting Services](https://github.com/dabit3/aws-amplify-workshop-react#removing-services)
 
-<!-- ## Redeeming our AWS Credit   
+## Redeeming our AWS Credit   
 
 1. Visit the [AWS Console](https://console.aws.amazon.com/console).
 2. In the top right corner, click on __My Account__.
 ![](dashboard1.jpg)
 3. In the left menu, click __Credits__.
-![](dashboard2.jpg) -->
+![](dashboard2.jpg)
 
 ## Getting Started - Creating the React Application
 
@@ -839,6 +839,38 @@ amplify push
 
 - Do you want to update code for your updated GraphQL API? __Y__
 - Do you want to generate GraphQL statements? __Y__
+
+
+## Deploying via the Amplify Console
+
+We have looked at deploying via the Amplify CLI hosting category, but what about if we wanted continous deployment? For this, we can use the [Amplify Console](https://aws.amazon.com/amplify/console/) to deploy the application.
+
+The first thing we need to do is [create a new GitHub repo](https://github.com/new) for this project. Once we've created the repo, we'll copy the URL for the project to the clipboard & initialize git in our local project:
+
+```sh
+git init
+
+git remote add origin git@github.com:username/project-name.git
+
+git add .
+
+git commit -m 'initial commit'
+
+git push origin master
+```
+
+Next we'll visit the Amplify Console in our AWS account at [https://eu-west-1.console.aws.amazon.com/amplify/home](https://eu-west-1.console.aws.amazon.com/amplify/home).
+
+Here, we'll click __Get Started__ to create a new deployment. Next, authorize Github as the repository service.
+
+Next, we'll choose the new repository & branch for the project we just created & click __Next__.
+
+In the next screen, we'll create a new role & use this role to allow the Amplify Console to deploy these resources & click __Next__.
+
+Finally, we can click __Save and Deploy__ to deploy our application!
+
+Now, we can push updates to Master to update our application.
+
 
 ## Adding Analytics
 

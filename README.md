@@ -352,10 +352,15 @@ app.get('/people', function(req, res) {
 Now we can add a new function called getPeople that will call this API:
 
 ```js
+componentDidMount() {
+  this.getData()
+  this.getPeople() // new
+}
+
 getPeople = async() => {
   try {
-    const data = await API.get('amplifyrestlamdbaapi', '/people')
-    this.setState({ people: data.people })
+    const data = await API.get('amplifyrestapi', '/people')
+    console.log('data from new people endpoint:', data)
   } catch (err) {
     console.log('error fetching data..', err)
   }

@@ -116,7 +116,7 @@ amplify push
 
 > To view the new Cognito authentication service at any time after its creation, go to the dashboard at [https://console.aws.amazon.com/cognito/](https://console.aws.amazon.com/cognito/). Also be sure that your region is set correctly.
 
-### Configuring the React applicaion
+### Configuring the React application
 
 Now, our resources are created & we can start using them!
 

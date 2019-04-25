@@ -147,6 +147,12 @@ Next, we'll wrap our default export (the App component) with the `withAuthentica
 export default withAuthenticator(App, { includeGreetings: true })
 ```
 
+```sh
+# run the app
+
+npm start
+```
+
 Now, we can run the app and see that an Authentication flow has been added in front of our App component. This flow gives users the ability to sign up & sign in.
 
 > To view the new user that was created in Cognito, go back to the dashboard at [https://console.aws.amazon.com/cognito/](https://console.aws.amazon.com/cognito/). Also be sure that your region is set correctly.

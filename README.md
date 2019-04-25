@@ -84,7 +84,7 @@ amplify init
 ```
 
 - Enter a name for the project: __amplifyreactapp__
-- Enter a name for the environment: __dev__
+- Enter a name for the environment: __local__
 - Choose your default editor: __Visual Studio Code (or your default editor)__   
 - Please choose the type of app that you're building __javascript__   
 - What javascript framework are you using __react__   
@@ -806,7 +806,7 @@ amplify env list
 
 | Environments |
 | ------------ |
-| dev          |
+| local          |
 | *apiupdate   |
 ```
 
@@ -827,10 +827,10 @@ Now, we can create this new stack by running `amplify push`:
 amplify push
 ```
 
-After we test it out, we can now merge it into our original dev environment:
+After we test it out, we can now merge it into our original local environment:
 
 ```sh
-amplify env checkout dev
+amplify env checkout local
 
 amplify status
 

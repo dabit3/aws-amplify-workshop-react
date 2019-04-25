@@ -10,7 +10,6 @@ In this workshop we'll learn how to build cloud-enabled web applications with Re
 - [REST API with a Lambda Function](https://github.com/dabit3/aws-amplify-workshop-react#adding-a-rest-api)
 - [GraphQL API with AWS AppSync](https://github.com/dabit3/aws-amplify-workshop-react#adding-a-graphql-api)
 - [Adding Storage with Amazon S3](https://github.com/dabit3/aws-amplify-workshop-react#working-with-storage)
-- [Hosting](https://github.com/dabit3/aws-amplify-workshop-react#hosting)
 - [Analytics](https://github.com/dabit3/aws-amplify-workshop-react#adding-analytics)
 - [Multiple Environments](https://github.com/dabit3/aws-amplify-workshop-react#working-with-multiple-environments)
 - [Deploying via the Amplify Console](https://github.com/dabit3/aws-amplify-workshop-react#amplify-console)
@@ -686,6 +685,117 @@ query listPets {
 }
 ```
 
+#### Creating custom resolvers (Advanced)
+
+Now let's say we want to define & use a custom GraphQL operation & create corresponding resolvers that do not yet exist? We can also do that using Amplify & the local environment.
+
+Let's create a query & resolvers that will query for __all__ pets in the API, similar to the functionality we had before changing the `listPets` resolver.
+
+To do so, we need to do three things:
+
+1. Define the operations we'd like to have available in our schema (add queries, mutations, subscriptions to __schema.graphql__).
+
+To do so, update __amplify/backend/api/ConferenceAPI/schema.graphql__ to the following:
+
+```graphql
+type Pet @model {
+  id: ID!
+  clientId: ID
+  name: String!
+  description: String!
+  owner: String
+}
+
+type ModelPetConnection {
+  items: [Pet]
+  nextToken: String
+}
+
+type Query {
+  listAllPets(limit: Int, nextToken: String): ModelPetConnection
+}
+```
+
+2. Create the request & response mapping templates in __amplify/backend/api/GraphQLPets/resolvers__.
+
+__Query.listAllPets.req.vtl__
+
+```vtl
+{
+    "version" : "2017-02-28",
+    "operation" : "Scan",
+    "limit": $util.defaultIfNull(${ctx.args.limit}, 20),
+    "nextToken": $util.toJson($util.defaultIfNullOrBlank($ctx.args.nextToken, null))
+}
+```
+
+__Query.listAllPets.res.vtl__
+
+```vtl
+{
+    "items": $util.toJson($ctx.result.items),
+    "nextToken": $util.toJson($util.defaultIfNullOrBlank($context.result.nextToken, null))
+}
+```
+
+3. Update __amplify/backend/api/GraphQLPets/stacks/CustomResources.json__ with the definition of the custom resource.
+
+Update the `Resources` field in __CustomResources.json__ to the following:
+
+```json
+{
+  ...rest of template,
+  "Resources": {
+    "QueryListAllPetsResolver": {
+      "Type": "AWS::AppSync::Resolver",
+      "Properties": {
+        "ApiId": {
+          "Ref": "AppSyncApiId"
+        },
+        "DataSourceName": "PetTable",
+        "TypeName": "Query",
+        "FieldName": "listAllPets",
+        "RequestMappingTemplateS3Location": {
+          "Fn::Sub": [
+            "s3://${S3DeploymentBucket}/${S3DeploymentRootKey}/resolvers/Query.listAllPets.req.vtl",
+            {
+              "S3DeploymentBucket": {
+                "Ref": "S3DeploymentBucket"
+              },
+              "S3DeploymentRootKey": {
+                "Ref": "S3DeploymentRootKey"
+              }
+            }
+          ]
+        },
+        "ResponseMappingTemplateS3Location": {
+          "Fn::Sub": [
+            "s3://${S3DeploymentBucket}/${S3DeploymentRootKey}/resolvers/Query.listAllPets.res.vtl",
+            {
+              "S3DeploymentBucket": {
+                "Ref": "S3DeploymentBucket"
+              },
+              "S3DeploymentRootKey": {
+                "Ref": "S3DeploymentRootKey"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  ...rest of template,
+}
+```
+
+Now that everything has been updated, run the push command again:
+
+```sh
+amplify push
+```
+
+Now, we should have a new query available in our AppSync API to list all pets.
+
 ## Working with Storage
 
 To add storage, we can use the following command:
@@ -813,25 +923,6 @@ class App extends Component {
 }
 ```
 
-## Hosting
-
-To deploy & host your app on AWS, we can use the `hosting` category.
-
-```sh
-amplify add hosting
-```
-
-- Select the environment setup: __DEV (S3 only with HTTP)__
-- hosting bucket name __YOURBUCKETNAME__
-- index doc for the website __index.html__
-- error doc for the website __index.html__
-
-Now, everything is set up & we can publish it:
-
-```sh
-amplify publish
-```
-
 ## Working with multiple environments
 
 You can create multiple environments for your application in which to create & test out new features without affecting the main environment which you are working on.
@@ -896,7 +987,7 @@ amplify push
 
 ## Deploying via the Amplify Console
 
-We have looked at deploying via the Amplify CLI hosting category, but what about if we wanted continous deployment? For this, we can use the [Amplify Console](https://aws.amazon.com/amplify/console/) to deploy the application.
+For hosting, we can use the [Amplify Console](https://aws.amazon.com/amplify/console/) to deploy the application.
 
 The first thing we need to do is [create a new GitHub repo](https://github.com/new) for this project. Once we've created the repo, we'll copy the URL for the project to the clipboard & initialize git in our local project:
 
@@ -988,3 +1079,9 @@ amplify status
 ```
 
 `amplify status` will give you the list of resources that are currently enabled in your app.
+
+## Deleting entire project
+
+```sh
+amplify delete
+```

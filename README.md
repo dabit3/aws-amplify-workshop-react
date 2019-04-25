@@ -176,6 +176,9 @@ class App extends React.Component {
   render() {
     return (
       // existing code
+      <div className="App">
+       // rest of code
+      </div>
     )
   }
 }

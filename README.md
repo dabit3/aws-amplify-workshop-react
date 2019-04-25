@@ -45,9 +45,9 @@ Now change into the new app directory & install the AWS Amplify & AWS Amplify Re
 
 ```bash
 cd my-amplify-app
-npm install --save aws-amplify aws-amplify-react
+npm install --save aws-amplify aws-amplify-react uuid
 # or
-yarn add aws-amplify aws-amplify-react
+yarn add aws-amplify aws-amplify-react uuid
 ```
 
 ## Installing the CLI & Initializing a new AWS Amplify Project
@@ -391,7 +391,8 @@ Answer the following questions
 type Pet @model {
   id: ID!
   name: String!
-  description: String
+  description: String!
+  clientId: ID
 }
 ```
 
@@ -508,8 +509,13 @@ async componentDidMount() {
  Now, let's look at how we can create mutations.
 
 ```js
+// import uuid to create a unique client ID
+import uuid from 'uuid/v4'
+
 // import the mutation
 import { createPet as CreatePet } from './graphql/mutations'
+
+const CLIENT_ID = uuid()
 
 // create initial state
 state = {
@@ -518,10 +524,9 @@ state = {
 
 createPet = async() => {
   const { name, description } = this.state
-  if (name === '') return
-  let pet = { name }
-  if (description !== '') {
-    pet = { ...pet, description }
+  if (name === '' || description === '') return
+  const pet = {
+    name, description, clientId: CLIENT_ID
   }
   const updatedPetArray = [...this.state.pets, pet]
   this.setState({ pets: updatedPetArray })
@@ -571,14 +576,9 @@ API.graphql(
     next: (eventData) => {
       console.log('eventData', eventData)
       const pet = eventData.value.data.onCreatePet
-      const pets = [
-        ...this.state.pets.filter(p => {
-          const val1 = p.name + p.description
-          const val2 = pet.name + pet.description
-          return val1 !== val2
-        }),
-        pet
-      ]
+      if (pet.clientId === CLIENT_ID) return
+      
+      const pets = [ ...this.state.pets, pet]
       this.setState({ pets })
     }
 });
@@ -602,36 +602,87 @@ amplify push
 
 Now, we can only access the API with a logged in user.
 
-_Let's how how we can access the user's identity in the resolver._
+Let's how how we can access the user's identity in the resolver. To do so, we'll first need to store the user's identity in the database table as userId & add a new index on the table to query for this user ID.
 
-To do so, open the AWS AppSync dashboard for the API, click __Schema__, & open the resolver for the `createPet` mutation.
+__Adding an index to the table__
 
-Here in the __Request mapping template__, update the resolver to add the following:
+Next, we'll want to add a new GSI (global secondary index) in the table. We do this so we can query on the index to gain new data access pattern.
 
-```js
-$util.qr($context.args.input.put("userId", $context.identity.sub))
-$util.qr($context.args.input.put("username", $context.identity.username))
+To add the index, open the [AppSync Console](https://console.aws.amazon.com/appsync/home), choose your API & click on __Data Sources__. Next, click on the data source link.
+
+From here, click on the __Indexes__ tab & click __Create index__.
+
+For the __partition key__, input `userId` to create a `userId-index` Index name & click __Create index__.
+
+Next, we'll update the resolver for adding pets & querying for pets.
+
+#### Updating the resolvers
+
+In the folder __amplify/backend/api/GraphQLPets/resolvers__, create the following two resolvers:
+
+__Mutation.createPet.req.vtl__ & __Query.listPets.req.vtl__.
+
+__Mutation.createPet.req.vtl__
+
+```vtl
+$util.qr($context.args.input.put("createdAt", $util.time.nowISO8601()))
+$util.qr($context.args.input.put("updatedAt", $util.time.nowISO8601()))
+$util.qr($context.args.input.put("__typename", "Pet"))
+$util.qr($context.args.input.put("userId", $ctx.identity.sub))
+
+{
+  "version": "2017-02-28",
+  "operation": "PutItem",
+  "key": {
+      "id":     $util.dynamodb.toDynamoDBJson($util.defaultIfNullOrBlank($ctx.args.input.id, $util.autoId()))
+  },
+  "attributeValues": $util.dynamodb.toMapValuesJson($context.args.input),
+  "condition": {
+      "expression": "attribute_not_exists(#id)",
+      "expressionNames": {
+          "#id": "id"
+    }
+  }
+}
 ```
 
-Now when we create items, the user's identity is stored with each request.
+__Query.listPets.req.vtl__
 
-Next, we need to add an index on the table holding the pet data. Open the Data Sources tab & click on the DynamoDB table link. From the DynamoDB table view, click on __indexes__ & __Create Index__.
-
-Here, create a new index. The partition key should be __userId__ & the index name needs to be __userId-index__.
-
-We can now query on the userId index, only fetching data for the logged-in user:
-
-```js
+```vtl
 {
     "version" : "2017-02-28",
     "operation" : "Query",
-    "index": "userId-index",
+    "index" : "userId-index",
     "query" : {
         "expression": "userId = :userId",
         "expressionValues" : {
             ":userId" : $util.dynamodb.toDynamoDBJson($ctx.identity.sub)
         }
     }
+}
+```
+
+Next, run the push command again to update the API:
+
+```sh
+amplify push
+```
+
+> Now that we've added authorization to the API, we will have to log in if we would like to perform queries in the AppSync Console. To log in, find the `aws_user_pools_web_client_id` from `aws-exports.js` & log in using your `username` & `password`.
+
+Now when we create new pets the `userId` field will be populated with the `userId` of the logged-in user.
+
+When we query for the pets, we will only receive the data for the items that we created ourselves.
+
+```graphql
+query listPets {
+  listPets {
+    items {
+      id
+      name
+      description
+    }
+  }
 }
 ```
 
@@ -816,8 +867,9 @@ Now we can update the GraphQL Schema in `amplify/backend/api/GraphQLPets/schema.
 ```graphql
 type Pet @model {
   id: ID!
+  clientId: ID
   name: String!
-  description: String
+  description: String!
   owner: String
 }
 ```

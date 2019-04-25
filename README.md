@@ -511,6 +511,8 @@ class App extends React.Component {
     );
   }
 }
+
+export default App
 ```
 
 ## Performing mutations
@@ -526,7 +528,7 @@ import { createPet as CreatePet } from './graphql/mutations'
 
 const CLIENT_ID = uuid()
 
-// create initial state
+// update initial state
 state = {
   name: '', description: '', pets: []
 }

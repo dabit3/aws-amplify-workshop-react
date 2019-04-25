@@ -718,7 +718,7 @@ To do so, we need to do three things:
 
 1. Define the operations we'd like to have available in our schema (add queries, mutations, subscriptions to __schema.graphql__).
 
-To do so, update __amplify/backend/api/ConferenceAPI/schema.graphql__ to the following:
+To do so, update __amplify/backend/api/GraphQLPets/schema.graphql__ to the following:
 
 ```graphql
 type Pet @model {

@@ -469,39 +469,48 @@ To do so, we need to define the query, execute the query, store the data in our 
 ### src/App.js
 
 ```js
+import React from 'react'
+import './App.css'
+
 // imports from Amplify library
 import { API, graphqlOperation } from 'aws-amplify'
-
 // import query
 import { listPets as ListPets } from './graphql/queries'
 
-// define some state to hold the data returned from the API
-state = {
-  pets: []
-}
-
-// execute the query in componentDidMount
-async componentDidMount() {
-  try {
-    const pets = await API.graphql(graphqlOperation(ListPets))
-    console.log('pets:', pets)
-    this.setState({
-      pets: pets.data.listPets.items
-    })
-  } catch (err) {
-    console.log('error fetching pets...', err)
+class App extends React.Component {
+  // create initial state
+  state = {
+    pets: []
   }
-}
-
-// add UI in render method to show data
-  {
-    this.state.pets.map((pet, index) => (
-      <div key={index}>
-        <h3>{pet.name}</h3>
-        <p>{pet.description}</p>
+  // execute the query in componentDidMount
+  async componentDidMount() {
+    try {
+      const pets = await API.graphql(graphqlOperation(ListPets))
+      console.log('pets:', pets)
+      this.setState({
+        pets: pets.data.listPets.items
+      })
+    } catch (err) {
+      console.log('error fetching pets...', err)
+    }
+  }
+  // implement into render method
+  render() {
+    return (
+      <div className="App">
+        <h2>Amplify App</h2>
+        {
+          this.state.pets.map((pet, index) => (
+            <div key={index}>
+              <h3>{pet.name}</h3>
+              <p>{pet.description}</p>
+            </div>
+          ))
+        }
       </div>
-    ))
+    );
   }
+}
 ```
 
 ## Performing mutations

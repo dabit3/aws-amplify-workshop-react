@@ -580,19 +580,28 @@ To do so, we need to define the subscription, listen for the subscription, & upd
 // import the subscription
 import { onCreatePet as OnCreatePet } from './graphql/subscriptions'
 
+// define the subscription in the class
+subscription = {}
+
 // subscribe in componentDidMount
-API.graphql(
-  graphqlOperation(OnCreatePet)
-).subscribe({
-    next: (eventData) => {
-      console.log('eventData', eventData)
-      const pet = eventData.value.data.onCreatePet
-      if (pet.clientId === CLIENT_ID) return
-      
-      const pets = [ ...this.state.pets, pet]
-      this.setState({ pets })
-    }
-});
+componentDidMount() {
+  this.subscription = API.graphql(
+    graphqlOperation(OnCreatePet)
+  ).subscribe({
+      next: (eventData) => {
+        console.log('eventData', eventData)
+        const pet = eventData.value.data.onCreatePet
+        if (pet.clientId === CLIENT_ID) return
+        
+        const pets = [ ...this.state.pets, pet]
+        this.setState({ pets })
+      }
+  })
+}
+
+componentWillUnmount() {
+  this.subscription.unsubscribe()
+}
 ```
 
 ### Adding Authorization to the GraphQL API (Advanced, optional)

@@ -620,6 +620,8 @@ Next, we'll run `amplify push`:
 amplify push
 ```
 
+- Do you want to update code for your updated GraphQL API __N__
+
 Now, we can only access the API with a logged in user.
 
 Let's how how we can access the user's identity in the resolver. To do so, we'll first need to store the user's identity in the database table as userId & add a new index on the table to query for this user ID.

@@ -956,13 +956,13 @@ Let's take a look at how to create a new environment. In this new environment, w
 First, we'll initialize a new environment using `amplify init`:
 
 ```sh
-amplify init
-```
+amplify env add
 
-- Do you want to use an existing environment? __N__
-- Enter a name for the environment: __apiupdate__
-- Do you want to use an AWS profile? __Y__
-- __amplify-workshop-user__
+> Do you want to use an existing environment? No
+> Enter a name for the environment: apiupdate
+> Do you want to use an AWS profile? Y
+> Please choose the profile you want to use: amplify-workshop-profile
+```
 
 Once the new environment is initialized, we should be able to see some information about our environment setup by running:
 
@@ -975,7 +975,7 @@ amplify env list
 | *apiupdate   |
 ```
 
-Now we can update the GraphQL Schema in `amplify/backend/api/GraphQLPets/schema.graphql` to the following (adding the owner field):
+Now we can update the GraphQL Schema in `amplify/backend/api/GraphQLPets/schema.graphql` to the following (adding the `owner` field):
 
 ```graphql
 type Pet @model {
@@ -997,9 +997,28 @@ After we test it out, we can now merge it into our original local environment:
 
 ```sh
 amplify env checkout local
+```
 
+Next, run the `status` command:
+
+```sh
 amplify status
+```
 
+You should now see an __Update__ operation:
+
+```sh
+Current Environment: local
+
+| Category | Resource name   | Operation | Provider plugin   |
+| -------- | --------------- | --------- | ----------------- |
+| Api      | GraphQLPets     | Update    | awscloudformation |
+| Auth     | cognito75a8ccb4 | No Change | awscloudformation |
+```
+
+To deploy the changes, run the push command:
+
+```sh
 amplify push
 ```
 

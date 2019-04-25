@@ -634,7 +634,7 @@ To add the index, open the [AppSync Console](https://console.aws.amazon.com/apps
 
 From here, click on the __Indexes__ tab & click __Create index__.
 
-For the __partition key__, input `userId` to create a `userId-index` Index name & click __Create index__.
+For the __Partition key__, input `userId` to create a `userId-index` Index name & click __Create index__.
 
 Next, we'll update the resolver for adding pets & querying for pets.
 

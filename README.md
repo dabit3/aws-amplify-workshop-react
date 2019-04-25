@@ -390,9 +390,9 @@ Answer the following questions
 ```graphql
 type Pet @model {
   id: ID!
+  clientId: ID
   name: String!
   description: String!
-  clientId: ID
 }
 ```
 

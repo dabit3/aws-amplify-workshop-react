@@ -1025,6 +1025,19 @@ amplify push
 - Do you want to update code for your updated GraphQL API? __Y__
 - Do you want to generate GraphQL statements? __Y__
 
+Now, the changes have been deployed & we can delete the apiupdate environment:
+
+```sh
+amplify env remove apiupdate
+
+Do you also want to remove all the resources of the environment from the cloud? Y
+```
+
+Now, we should be able to run the `list` command & see only our main environment:
+
+```sh
+amplify env list
+```
 
 ## Deploying via the Amplify Console
 

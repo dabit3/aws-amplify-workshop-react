@@ -726,7 +726,6 @@ type Pet @model {
   clientId: ID
   name: String!
   description: String!
-  owner: String
 }
 
 type ModelPetConnection {

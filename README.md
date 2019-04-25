@@ -135,6 +135,8 @@ Now, our app is ready to start using our AWS services.
 
 To add authentication, we'll go into __src/App.js__ and first import the `withAuthenticator` HOC (Higher Order Component) from `aws-amplify-react`:
 
+### src/App.js
+
 ```js
 import { withAuthenticator } from 'aws-amplify-react'
 ```
@@ -153,13 +155,23 @@ Now, we can run the app and see that an Authentication flow has been added in fr
 
 We can access the user's info now that they are signed in by calling `Auth.currentAuthenticatedUser()`.
 
+### src/App.js
+
 ```js
 import { Auth } from 'aws-amplify'
 
-async componentDidMount() {
-  const user = await Auth.currentAuthenticatedUser()
-  console.log('user info:', user.signInUserSession.idToken.payload)
-  console.log('username:', user.username)
+class App extends React.Component {
+  async componentDidMount() {
+    const user = await Auth.currentAuthenticatedUser()
+    console.log('user info:', user.signInUserSession.idToken.payload)
+    console.log('username:', user.username)
+  }
+
+  render() {
+    return (
+      // existing code
+    )
+  }
 }
 ```
 

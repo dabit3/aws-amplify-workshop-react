@@ -971,7 +971,7 @@ amplify env list
 
 | Environments |
 | ------------ |
-| local          |
+| local        |
 | *apiupdate   |
 ```
 

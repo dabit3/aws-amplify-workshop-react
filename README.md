@@ -12,7 +12,7 @@ In this workshop we'll learn how to build cloud-enabled web applications with Re
 - [Adding Storage with Amazon S3](https://github.com/dabit3/aws-amplify-workshop-react#working-with-storage)
 - [Analytics](https://github.com/dabit3/aws-amplify-workshop-react#adding-analytics)
 - [Multiple Environments](https://github.com/dabit3/aws-amplify-workshop-react#working-with-multiple-environments)
-- [Deploying via the Amplify Console](https://github.com/dabit3/aws-amplify-workshop-react#amplify-console)
+- [Deploying via the Amplify Console](https://github.com/dabit3/aws-amplify-workshop-react#deploying-via-the-amplify-console)
 - [Removing / Deleting Services](https://github.com/dabit3/aws-amplify-workshop-react#removing-services)
 
 <!-- ## Redeeming our AWS Credit   
@@ -68,7 +68,7 @@ amplify configure
 > If you'd like to see a video walkthrough of this configuration process, click [here](https://www.youtube.com/watch?v=fWbM5DLh25U).
 
 Here we'll walk through the `amplify configure` setup. Once you've signed in to the AWS console, continue:
-- Specify the AWS Region: __eu-central-1__
+- Specify the AWS Region: __us-east-1__
 - Specify the username of the new IAM user: __amplify-workshop-user__
 > In the AWS Console, click __Next: Permissions__, __Next: Tags__, __Next: Review__, & __Create User__ to create the new IAM user. Then, return to the command line & press Enter.
 - Enter the access key of the newly created user:   

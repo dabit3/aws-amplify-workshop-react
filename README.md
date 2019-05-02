@@ -113,7 +113,11 @@ Now, we'll run the push command and the cloud resources will be created in our A
 amplify push
 ```
 
-> To view the new Cognito authentication service at any time after its creation, go to the dashboard at [https://console.aws.amazon.com/cognito/](https://console.aws.amazon.com/cognito/). Also be sure that your region is set correctly.
+To view the services created by Amplify at any time you can run the `console` command & choose the feature you'd like to view:
+
+```sh
+amplify console
+```
 
 ### Configuring the React applicaion
 
@@ -428,7 +432,11 @@ amplify push
 - Do you want to generate/update all possible GraphQL operations - queries, mutations and subscriptions? __Y__
 - Enter maximum statement depth [increase from default if your schema is deeply nested] __2__
 
-> To view the new AWS AppSync API at any time after its creation, go to the dashboard at [https://console.aws.amazon.com/appsync](https://console.aws.amazon.com/appsync). Also be sure that your region is set correctly.
+To view the services created by Amplify at any time you can run the `console` command & choose the feature you'd like to view:
+
+```sh
+amplify console
+```
 
 ### Adding mutations from within the AWS AppSync Console
 
@@ -891,7 +899,11 @@ addToStorage = () => {
 
 This would create a folder called `javascript` in our S3 bucket & store a file called __MyReactComponent.js__ there with the code we specified in the second argument of `Storage.put`.
 
-> To view the new S3 Bucket at any time after its creation, go to the dashboard at [https://s3.console.aws.amazon.com/s3/home](https://s3.console.aws.amazon.com/s3/home).
+To view the services created by Amplify at any time you can run the `console` command & choose the feature you'd like to view:
+
+```sh
+amplify console
+```
 
 If we want to read everything from this folder, we can use `Storage.list`:
 

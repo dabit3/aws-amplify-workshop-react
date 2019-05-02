@@ -986,7 +986,7 @@ When you create a new environment from an existing environment, you are given a 
 
 Let's take a look at how to create a new environment. In this new environment, we'll re-configure the GraphQL Schema to have another field for the pet owner.
 
-First, we'll initialize a new environment using `amplify init`:
+First, we'll initialize a new environment using `amplify env add`:
 
 ```sh
 amplify env add

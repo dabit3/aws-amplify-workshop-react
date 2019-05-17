@@ -12,16 +12,16 @@ In this workshop we'll learn how to build cloud-enabled web applications with Re
 - [Adding Storage with Amazon S3](https://github.com/dabit3/aws-amplify-workshop-react#working-with-storage)
 - [Analytics](https://github.com/dabit3/aws-amplify-workshop-react#adding-analytics)
 - [Multiple Environments](https://github.com/dabit3/aws-amplify-workshop-react#working-with-multiple-environments)
+- [Adding Fine-grained Authorization to the GraphQL API]()
 - [Deploying via the Amplify Console](https://github.com/dabit3/aws-amplify-workshop-react#deploying-via-the-amplify-console)
 - [Removing / Deleting Services](https://github.com/dabit3/aws-amplify-workshop-react#removing-services)
 
-<!-- ## Redeeming our AWS Credit   
-
+## Redeeming our AWS Credit   
 1. Visit the [AWS Console](https://console.aws.amazon.com/console).
 2. In the top right corner, click on __My Account__.
 ![](dashboard1.jpg)
 3. In the left menu, click __Credits__.
-![](dashboard2.jpg) -->
+![](dashboard2.jpg)
 
 ## Getting Started - Creating the React Application
 
@@ -633,7 +633,7 @@ componentWillUnmount() {
 }
 ```
 
-### Adding Authorization to the GraphQL API (Advanced, optional)
+### Adding Basic Authorization to the GraphQL API
 
 To add authorization to the API, we can re-configure the API to use our cognito identity pool. To do so, we can run `amplify configure api`:
 
@@ -652,200 +652,6 @@ amplify push
 - Do you want to update code for your updated GraphQL API __N__
 
 Now, we can only access the API with a logged in user.
-
-Let's how how we can access the user's identity in the resolver. To do so, we'll first need to store the user's identity in the database table as userId & add a new index on the table to query for this user ID.
-
-__Adding an index to the table__
-
-Next, we'll want to add a new GSI (global secondary index) in the table. We do this so we can query on the index to gain new data access pattern.
-
-To add the index, open the [AppSync Console](https://console.aws.amazon.com/appsync/home), choose your API & click on __Data Sources__. Next, click on the data source link.
-
-From here, click on the __Indexes__ tab & click __Create index__.
-
-For the __Partition key__, input `userId` to create a `userId-index` Index name & click __Create index__.
-
-Next, we'll update the resolver for adding pets & querying for pets.
-
-#### Updating the resolvers
-
-In the folder __amplify/backend/api/GraphQLPets/resolvers__, create the following two resolvers:
-
-__Mutation.createPet.req.vtl__ & __Query.listPets.req.vtl__.
-
-__Mutation.createPet.req.vtl__
-
-```vtl
-$util.qr($context.args.input.put("createdAt", $util.time.nowISO8601()))
-$util.qr($context.args.input.put("updatedAt", $util.time.nowISO8601()))
-$util.qr($context.args.input.put("__typename", "Pet"))
-$util.qr($context.args.input.put("userId", $ctx.identity.sub))
-
-{
-  "version": "2017-02-28",
-  "operation": "PutItem",
-  "key": {
-      "id":     $util.dynamodb.toDynamoDBJson($util.defaultIfNullOrBlank($ctx.args.input.id, $util.autoId()))
-  },
-  "attributeValues": $util.dynamodb.toMapValuesJson($context.args.input),
-  "condition": {
-      "expression": "attribute_not_exists(#id)",
-      "expressionNames": {
-          "#id": "id"
-    }
-  }
-}
-```
-
-__Query.listPets.req.vtl__
-
-```vtl
-{
-    "version" : "2017-02-28",
-    "operation" : "Query",
-    "index" : "userId-index",
-    "query" : {
-        "expression": "userId = :userId",
-        "expressionValues" : {
-            ":userId" : $util.dynamodb.toDynamoDBJson($ctx.identity.sub)
-        }
-    }
-}
-```
-
-Next, run the push command again to update the API:
-
-```sh
-amplify push
-```
-
-> Now that we've added authorization to the API, we will have to log in if we would like to perform queries in the AppSync Console. To log in, find the `aws_user_pools_web_client_id` from `aws-exports.js` & log in using your `username` & `password`.
-
-Now when we create new pets the `userId` field will be populated with the `userId` of the logged-in user.
-
-When we query for the pets, we will only receive the data for the items that we created ourselves.
-
-```graphql
-query listPets {
-  listPets {
-    items {
-      id
-      name
-      description
-    }
-  }
-}
-```
-
-#### Creating custom resolvers (Advanced)
-
-Now let's say we want to define & use a custom GraphQL operation & create corresponding resolvers that do not yet exist? We can also do that using Amplify & the local environment.
-
-Let's create a query & resolvers that will query for __all__ pets in the API, similar to the functionality we had before changing the `listPets` resolver.
-
-To do so, we need to do three things:
-
-1. Define the operations we'd like to have available in our schema (add queries, mutations, subscriptions to __schema.graphql__).
-
-To do so, update __amplify/backend/api/GraphQLPets/schema.graphql__ to the following:
-
-```graphql
-type Pet @model {
-  id: ID!
-  clientId: ID
-  name: String!
-  description: String!
-}
-
-type ModelPetConnection {
-  items: [Pet]
-  nextToken: String
-}
-
-type Query {
-  listAllPets(limit: Int, nextToken: String): ModelPetConnection
-}
-```
-
-2. Create the request & response mapping templates in __amplify/backend/api/GraphQLPets/resolvers__.
-
-__Query.listAllPets.req.vtl__
-
-```vtl
-{
-    "version" : "2017-02-28",
-    "operation" : "Scan",
-    "limit": $util.defaultIfNull(${ctx.args.limit}, 20),
-    "nextToken": $util.toJson($util.defaultIfNullOrBlank($ctx.args.nextToken, null))
-}
-```
-
-__Query.listAllPets.res.vtl__
-
-```vtl
-{
-    "items": $util.toJson($ctx.result.items),
-    "nextToken": $util.toJson($util.defaultIfNullOrBlank($context.result.nextToken, null))
-}
-```
-
-3. Update __amplify/backend/api/GraphQLPets/stacks/CustomResources.json__ with the definition of the custom resource.
-
-Update the `Resources` field in __CustomResources.json__ to the following:
-
-```json
-{
-  ...rest of template,
-  "Resources": {
-    "QueryListAllPetsResolver": {
-      "Type": "AWS::AppSync::Resolver",
-      "Properties": {
-        "ApiId": {
-          "Ref": "AppSyncApiId"
-        },
-        "DataSourceName": "PetTable",
-        "TypeName": "Query",
-        "FieldName": "listAllPets",
-        "RequestMappingTemplateS3Location": {
-          "Fn::Sub": [
-            "s3://${S3DeploymentBucket}/${S3DeploymentRootKey}/resolvers/Query.listAllPets.req.vtl",
-            {
-              "S3DeploymentBucket": {
-                "Ref": "S3DeploymentBucket"
-              },
-              "S3DeploymentRootKey": {
-                "Ref": "S3DeploymentRootKey"
-              }
-            }
-          ]
-        },
-        "ResponseMappingTemplateS3Location": {
-          "Fn::Sub": [
-            "s3://${S3DeploymentBucket}/${S3DeploymentRootKey}/resolvers/Query.listAllPets.res.vtl",
-            {
-              "S3DeploymentBucket": {
-                "Ref": "S3DeploymentBucket"
-              },
-              "S3DeploymentRootKey": {
-                "Ref": "S3DeploymentRootKey"
-              }
-            }
-          ]
-        }
-      }
-    }
-  },
-  ...rest of template,
-}
-```
-
-Now that everything has been updated, run the push command again:
-
-```sh
-amplify push
-```
-
-Now, we should have a new query available in our AppSync API to list all pets.
 
 ## Working with Storage
 
@@ -1148,6 +954,202 @@ recordEvent = () => {
 
 <button onClick={this.recordEvent}>Record Event</button>
 ```
+
+## Adding Fine-grained Authorization to the GraphQL API
+
+Let's how how we can access the user's identity in the resolver. To do so, we'll first need to store the user's identity in the database table as userId & add a new index on the table to query for this user ID.
+
+__Adding an index to the table__
+
+Next, we'll want to add a new GSI (global secondary index) in the table. We do this so we can query on the index to gain new data access pattern.
+
+To add the index, open the [AppSync Console](https://console.aws.amazon.com/appsync/home), choose your API & click on __Data Sources__. Next, click on the data source link.
+
+From here, click on the __Indexes__ tab & click __Create index__.
+
+For the __Partition key__, input `userId` to create a `userId-index` Index name & click __Create index__.
+
+Next, we'll update the resolver for adding pets & querying for pets.
+
+#### Updating the resolvers
+
+In the folder __amplify/backend/api/GraphQLPets/resolvers__, create the following two resolvers:
+
+__Mutation.createPet.req.vtl__ & __Query.listPets.req.vtl__.
+
+__Mutation.createPet.req.vtl__
+
+```vtl
+$util.qr($context.args.input.put("createdAt", $util.time.nowISO8601()))
+$util.qr($context.args.input.put("updatedAt", $util.time.nowISO8601()))
+$util.qr($context.args.input.put("__typename", "Pet"))
+$util.qr($context.args.input.put("userId", $ctx.identity.sub))
+
+{
+  "version": "2017-02-28",
+  "operation": "PutItem",
+  "key": {
+      "id":     $util.dynamodb.toDynamoDBJson($util.defaultIfNullOrBlank($ctx.args.input.id, $util.autoId()))
+  },
+  "attributeValues": $util.dynamodb.toMapValuesJson($context.args.input),
+  "condition": {
+      "expression": "attribute_not_exists(#id)",
+      "expressionNames": {
+          "#id": "id"
+    }
+  }
+}
+```
+
+__Query.listPets.req.vtl__
+
+```vtl
+{
+    "version" : "2017-02-28",
+    "operation" : "Query",
+    "index" : "userId-index",
+    "query" : {
+        "expression": "userId = :userId",
+        "expressionValues" : {
+            ":userId" : $util.dynamodb.toDynamoDBJson($ctx.identity.sub)
+        }
+    }
+}
+```
+
+Next, run the push command again to update the API:
+
+```sh
+amplify push
+```
+
+> Now that we've added authorization to the API, we will have to log in if we would like to perform queries in the AppSync Console. To log in, find the `aws_user_pools_web_client_id` from `aws-exports.js` & log in using your `username` & `password`.
+
+Now when we create new pets the `userId` field will be populated with the `userId` of the logged-in user.
+
+When we query for the pets, we will only receive the data for the items that we created ourselves.
+
+```graphql
+query listPets {
+  listPets {
+    items {
+      id
+      name
+      description
+    }
+  }
+}
+```
+
+#### Creating custom resolvers (Advanced)
+
+Now let's say we want to define & use a custom GraphQL operation & create corresponding resolvers that do not yet exist? We can also do that using Amplify & the local environment.
+
+Let's create a query & resolvers that will query for __all__ pets in the API, similar to the functionality we had before changing the `listPets` resolver.
+
+To do so, we need to do three things:
+
+1. Define the operations we'd like to have available in our schema (add queries, mutations, subscriptions to __schema.graphql__).
+
+To do so, update __amplify/backend/api/GraphQLPets/schema.graphql__ to the following:
+
+```graphql
+type Pet @model {
+  id: ID!
+  clientId: ID
+  name: String!
+  description: String!
+}
+
+type ModelPetConnection {
+  items: [Pet]
+  nextToken: String
+}
+
+type Query {
+  listAllPets(limit: Int, nextToken: String): ModelPetConnection
+}
+```
+
+2. Create the request & response mapping templates in __amplify/backend/api/GraphQLPets/resolvers__.
+
+__Query.listAllPets.req.vtl__
+
+```vtl
+{
+    "version" : "2017-02-28",
+    "operation" : "Scan",
+    "limit": $util.defaultIfNull(${ctx.args.limit}, 20),
+    "nextToken": $util.toJson($util.defaultIfNullOrBlank($ctx.args.nextToken, null))
+}
+```
+
+__Query.listAllPets.res.vtl__
+
+```vtl
+{
+    "items": $util.toJson($ctx.result.items),
+    "nextToken": $util.toJson($util.defaultIfNullOrBlank($context.result.nextToken, null))
+}
+```
+
+3. Update __amplify/backend/api/GraphQLPets/stacks/CustomResources.json__ with the definition of the custom resource.
+
+Update the `Resources` field in __CustomResources.json__ to the following:
+
+```json
+{
+  ...rest of template,
+  "Resources": {
+    "QueryListAllPetsResolver": {
+      "Type": "AWS::AppSync::Resolver",
+      "Properties": {
+        "ApiId": {
+          "Ref": "AppSyncApiId"
+        },
+        "DataSourceName": "PetTable",
+        "TypeName": "Query",
+        "FieldName": "listAllPets",
+        "RequestMappingTemplateS3Location": {
+          "Fn::Sub": [
+            "s3://${S3DeploymentBucket}/${S3DeploymentRootKey}/resolvers/Query.listAllPets.req.vtl",
+            {
+              "S3DeploymentBucket": {
+                "Ref": "S3DeploymentBucket"
+              },
+              "S3DeploymentRootKey": {
+                "Ref": "S3DeploymentRootKey"
+              }
+            }
+          ]
+        },
+        "ResponseMappingTemplateS3Location": {
+          "Fn::Sub": [
+            "s3://${S3DeploymentBucket}/${S3DeploymentRootKey}/resolvers/Query.listAllPets.res.vtl",
+            {
+              "S3DeploymentBucket": {
+                "Ref": "S3DeploymentBucket"
+              },
+              "S3DeploymentRootKey": {
+                "Ref": "S3DeploymentRootKey"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  ...rest of template,
+}
+```
+
+Now that everything has been updated, run the push command again:
+
+```sh
+amplify push
+```
+
+Now, we should have a new query available in our AppSync API to list all pets.
 
 ## Removing Services
 

@@ -7,6 +7,7 @@ In this workshop we'll learn how to build cloud-enabled web applications with Re
 ### Topics we'll be covering:
 
 - [Authentication](https://github.com/dabit3/aws-amplify-workshop-react#adding-authentication)
+- [Serverless Functions](https://github.com/dabit3/aws-amplify-workshop-react#adding-a-serverless-function)
 - [REST API with a Lambda Function](https://github.com/dabit3/aws-amplify-workshop-react#adding-a-rest-api)
 - [GraphQL API with AWS AppSync](https://github.com/dabit3/aws-amplify-workshop-react#adding-a-graphql-api)
 - [Adding Storage with Amazon S3](https://github.com/dabit3/aws-amplify-workshop-react#working-with-storage)
@@ -233,6 +234,40 @@ signUp = async() => {
   }
 }
 ```
+
+## Adding a Serverless Function
+
+To add a serverless function, we can run the following command:
+
+```sh
+amplify add function
+```
+
+> Answer the following questions
+
+- Provide a friendly name for your resource to be used as a label for this category in the project: __basiclambd
+a__
+- Provide the AWS Lambda function name: __basiclambda__
+- Choose the function template that you want to use: __Hello world function__
+- Do you want to edit the local lambda function now? __Y__
+
+Edit the function to look like this, & then save the file.
+
+```js
+exports.handler = function (event, context) {
+  console.log('event: ', event)
+  const body = {
+    message: "Hello world!"
+  }
+  const response = {
+    statusCode: 200,
+    body
+  }
+  context.done(null, response);
+}
+```
+
+Next, we can test this out by running 
 
 ## Adding a REST API
 

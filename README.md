@@ -237,6 +237,8 @@ signUp = async() => {
 
 ## Adding a Serverless Function
 
+### Adding a basic Lambda Function
+
 To add a serverless function, we can run the following command:
 
 ```sh
@@ -250,6 +252,8 @@ a__
 - Provide the AWS Lambda function name: __basiclambda__
 - Choose the function template that you want to use: __Hello world function__
 - Do you want to edit the local lambda function now? __Y__
+
+> This should open the function package located at __amplify/backend/function/basiclambda/src/index.js__.
 
 Edit the function to look like this, & then save the file.
 
@@ -267,7 +271,33 @@ exports.handler = function (event, context) {
 }
 ```
 
-Next, we can test this out by running 
+Next, we can test this out by running:
+
+```sh
+amplify function invoke basiclambda
+```
+
+- Provide the name of the script file that contains your handler function: index.js
+-  Provide the name of the handler function to invoke: handler
+
+You'll notice the following output from your terminal:
+
+```sh
+Running "lambda_invoke:default" (lambda_invoke) task
+
+event:  { key1: 'value1', key2: 'value2', key3: 'value3' }
+
+Success!  Message:
+------------------
+{"statusCode":200,"body":{"message":"Hello world!"}}
+
+Done.
+Done running invoke function.
+```
+
+Where is the event data coming from? It is coming from the values located in event.json in the function folder (__amplify/backend/function/basiclambda/src/event.json__). If you update the values here, you can simulate data coming arguments the event.
+
+Feel free to test out the function by updating `event.json` with data of your own.
 
 ## Adding a REST API
 

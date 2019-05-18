@@ -582,6 +582,8 @@ Now, the operations associated with this field will only be accessible by the cr
 
 To test it out, try creating a new user & accessing a note from another user.
 
+To test the API out in the AWS AppSync console, it will ask for you to __Login with User Pools__. The form will ask you for a __ClientId__. This __ClientId__ is located in __src/aws-exports.js__ in the `aws_user_pools_web_client_id` field.
+
 ## Adding a Serverless Function
 
 ### Adding a basic Lambda Function

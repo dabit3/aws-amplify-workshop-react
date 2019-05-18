@@ -331,8 +331,13 @@ app.use(function(req, res, next) {
 const axios = require('axios')
 
 app.get('/coins', function(req, res) {
-  const { apiGateway: { event: { queryStringParameters: { start = 0, limit = 5 } = {} } }} = req
-  axios.get(`https://api.coinlore.com/api/tickers/?start=${start}&limit=${limit}`)
+  let apiUrl = `https://api.coinlore.com/api/tickers?start=0&limit=10`
+  // if we invoke locally, apiGateway will be undefined
+  if (req.apiGateway && req.apiGateway.event.queryStringParameters) {
+    const { start = 0, limit = 10 } = req.apiGateway.event.queryStringParameters
+    apiUrl = `https://api.coinlore.com/api/tickers/?start=${start}&limit=${limit}`
+  }
+  axios.get(apiUrl)
     .then(response => {
       res.json({
         data: response.data
@@ -358,9 +363,32 @@ Now we can test this function out:
 amplify function invoke cryptofunction
 ```
 
+This will start up the node server. We can then make `curl` requests agains the endpoint:
+
+```sh
+curl 'localhost:3000/coins'
+```
+
+If we'd like to test out the query parameters, we can update the __event.json__ to add the following:
+
+```json
+{
+    "httpMethod": "GET",
+    "path": "/coins",
+    "queryStringParameters": {
+        "start": "0",
+        "limit": "1"
+    }
+}
+```
+
+When we invoke the function these query parameters will be passed in & the http request will be made immediately.
+
 ## Adding a REST API
 
-To add a REST API, we can use the following command:
+Now that we've created the cryptocurrency Lambda function let's add an API endpoint so we can invoke it via http.
+
+To add the REST API, we can use the following command:
 
 ```sh
 amplify add api
@@ -369,36 +397,16 @@ amplify add api
 > Answer the following questions
 
 - Please select from one of the above mentioned services __REST__   
-- Provide a friendly name for your resource that will be used to label this category in the project: __amplifyrestapi__   
-- Provide a path, e.g. /items __/pets__   
-- Choose lambda source __Create a new Lambda function__   
-- Provide a friendly name for your resource that will be used to label this category in the project: __amplifyrestapilambda__   
-- Provide the Lambda function name: __amplifyrestapilambda__   
-- Please select the function template you want to use: __Serverless express function (Integration with Amazon API Gateway)__   
-- Do you want to edit the local lambda function now? __Y__   
-
-> Update the existing `app.get('/pets') route with the following:
-```js
-app.get('/pets', function(req, res) {
-  // Add your code here
-  // Return the API Gateway event and query string parameters for example
-  const pets = [
-    'Spike', 'Zeus', 'Butch'
-  ]
-  res.json({
-    success: 'get call succeed!',
-    url: req.url,
-    pets
-  });
-});
-```
-
+- Provide a friendly name for your resource that will be used to label this category in the project: __cryptoapi__   
+- Provide a path, e.g. /items __/crypto__   
+- Choose lambda source __Use a Lambda function already added in the current Amplify project__   
+- Choose the Lambda function to invoke by this path: __cryptofunction__   
 - Restrict API access __Y__
 - Who should have access? __Authenticated users only__
-- What kind of access do you want for Authenticated users __read/write__
+- What kind of access do you want for Authenticated users __read/create/update/delete__
 - Do you want to add another path? (y/N) __N__     
 
-> Now the resources have been created & configured & we can push them to our account: 
+Now the resources have been created & configured & we can push them to our account: 
 
 ```bash
 amplify push

@@ -330,7 +330,7 @@ const axios = require('axios')
 
 app.get('/coins', function(req, res) {
   let apiUrl = `https://api.coinlore.com/api/tickers?start=0&limit=10`
-  // if we invoke locally, apiGateway will be undefined
+  
   if (req.apiGateway && req.apiGateway.event.queryStringParameters) {
     const { start = 0, limit = 10 } = req.apiGateway.event.queryStringParameters
     apiUrl = `https://api.coinlore.com/api/tickers/?start=${start}&limit=${limit}`

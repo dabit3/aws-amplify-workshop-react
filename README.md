@@ -15,6 +15,7 @@ In this workshop we'll learn how to build cloud-enabled web applications with Gr
 - [Analytics](https://github.com/dabit3/aws-amplify-workshop-react#adding-analytics)
 - [Multiple Environments](https://github.com/dabit3/aws-amplify-workshop-react#working-with-multiple-environments)
 - [Deploying via the Amplify Console](https://github.com/dabit3/aws-amplify-workshop-react#deploying-via-the-amplify-console)
+- [React Native](https://github.com/dabit3/aws-amplify-workshop-react#react-native)
 - [Removing / Deleting Services](https://github.com/dabit3/aws-amplify-workshop-react#removing-services)
 
 ## Redeeming our AWS Credit   
@@ -701,7 +702,7 @@ Next, we'll install axios in the function package:
 ```sh
 cd amplify/backend/function/cryptofunction/src
 
-yarn add axios
+npm install axios
 ```
 
 Next, change back into the root directory.
@@ -1108,6 +1109,22 @@ In the next screen, we'll create a new role & use this role to allow the Amplify
 Finally, we can click __Save and Deploy__ to deploy our application!
 
 Now, we can push updates to Master to update our application.
+
+## React Native
+
+AWS Amplify also has framework support for [React Native](https://aws-amplify.github.io/docs/js/start?platform=react-native).
+
+To get started with using AWS Amplify with React Native, we'll need to install the __AWS Amplify React Native__ package & then link the dependencies.
+
+```sh
+npm install aws-amplify-react-native
+
+# If using Expo, you do not need to link these two libraries as they are both part of the Expo SDK.
+react-native link amazon-cognito-identity-js
+react-native link react-native-vector-icons
+```
+
+Implementing features with AWS Amplify in React Native is the same as the features implemented in the other steps of this workshop. The only difference is that you will be working with React Native primitives vs HTML elements.
 
 ## Removing Services
 

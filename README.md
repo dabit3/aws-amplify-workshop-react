@@ -1,6 +1,6 @@
 # Building Serverless Web Applications with React and AWS Amplify
 
-In this workshop we'll learn how to build cloud-enabled web applications with React & [AWS Amplify](https://aws-amplify.github.io/).
+In this workshop we'll learn how to build cloud-enabled web applications with GraphQL, React, & [AWS Amplify](https://aws-amplify.github.io/).
 
 ![](header2.jpg)
 
@@ -247,8 +247,7 @@ amplify add function
 
 > Answer the following questions
 
-- Provide a friendly name for your resource to be used as a label for this category in the project: __basiclambd
-a__
+- Provide a friendly name for your resource to be used as a label for this category in the project: __basiclambda__
 - Provide the AWS Lambda function name: __basiclambda__
 - Choose the function template that you want to use: __Hello world function__
 - Do you want to edit the local lambda function now? __Y__
@@ -298,6 +297,66 @@ Done running invoke function.
 Where is the event data coming from? It is coming from the values located in event.json in the function folder (__amplify/backend/function/basiclambda/src/event.json__). If you update the values here, you can simulate data coming arguments the event.
 
 Feel free to test out the function by updating `event.json` with data of your own.
+
+### Adding a function running an express server
+
+Next, we'll build a function that will be running an [Express](https://expressjs.com/) server inside of it.
+
+This new function will fetch data from a cryptocurrency API & return the values in the response.
+
+To get started, we'll create a new function:
+
+```sh
+amplify add function
+```
+
+> Answer the following questions
+
+- Provide a friendly name for your resource to be used as a label for this category in the project: __cryptofunction__
+- Provide the AWS Lambda function name: __cryptofunction__
+- Choose the function template that you want to use: __Serverless express function (Integration with Amazon API Gateway)__
+- Do you want to edit the local lambda function now? __Y__
+
+> This should open the function package located at __amplify/backend/function/cryptofunction/src/index.js__.
+
+Here, we'll add the following code & save the file:
+
+```js
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*")
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+  next()
+});
+// add the following code 👇
+const axios = require('axios')
+
+app.get('/coins', function(req, res) {
+  const { apiGateway: { event: { queryStringParameters: { start = 0, limit = 5 } = {} } }} = req
+  axios.get(`https://api.coinlore.com/api/tickers/?start=${start}&limit=${limit}`)
+    .then(response => {
+      res.json({
+        data: response.data
+      })
+    })
+    .catch(err => res.json({ error: err }))
+})
+```
+
+Next, we'll install axios in the function package:
+
+```sh
+cd amplify/backend/function/cryptofunction/src
+
+yarn add axios
+```
+
+Next, change back into the root directory.
+
+Now we can test this function out:
+
+```sh
+amplify function invoke cryptofunction
+```
 
 ## Adding a REST API
 

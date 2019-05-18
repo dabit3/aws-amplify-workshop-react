@@ -426,7 +426,7 @@ function App() {
 
   async function getData() {
     try {
-      // const coinData = await API.get('cryptoapi', '/coins')
+      // const data = await API.get('cryptoapi', '/coins')
       const data = await API.get('cryptoapi', '/coins?limit=5&start=100')
       console.log('data from Lambda REST API: ', data)
       updateCoins(data.coins)

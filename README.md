@@ -6,15 +6,15 @@ In this workshop we'll learn how to build cloud-enabled web applications with Gr
 
 ### Topics we'll be covering:
 
-- [Authentication](https://github.com/dabit3/aws-amplify-workshop-react/tree/react-europe#adding-authentication)
-- [Serverless Functions](https://github.com/dabit3/aws-amplify-workshop-react/tree/react-europe#adding-a-serverless-function)
-- [REST API with a Lambda Function](https://github.com/dabit3/aws-amplify-workshop-react/tree/react-europe#adding-a-rest-api)
-- [GraphQL API with AWS AppSync](https://github.com/dabit3/aws-amplify-workshop-react/tree/react-europe#adding-a-graphql-api)
-- [Adding Storage with Amazon S3](https://github.com/dabit3/aws-amplify-workshop-react/tree/react-europe#working-with-storage)
-- [Analytics](https://github.com/dabit3/aws-amplify-workshop-react/tree/react-europe#adding-analytics)
-- [Multiple Environments](https://github.com/dabit3/aws-amplify-workshop-react/tree/react-europe#working-with-multiple-environments)
-- [Deploying via the Amplify Console](https://github.com/dabit3/aws-amplify-workshop-react/tree/react-europe#deploying-via-the-amplify-console)
-- [Removing / Deleting Services](https://github.com/dabit3/aws-amplify-workshop-react/tree/react-europe#removing-services)
+- [Authentication](https://github.com/dabit3/aws-amplify-workshop-react#adding-authentication)
+- [Serverless Functions](https://github.com/dabit3/aws-amplify-workshop-react#adding-a-serverless-function)
+- [REST API with a Lambda Function](https://github.com/dabit3/aws-amplify-workshop-react#adding-a-rest-api)
+- [GraphQL API with AWS AppSync](https://github.com/dabit3/aws-amplify-workshop-react#adding-a-graphql-api)
+- [Adding Storage with Amazon S3](https://github.com/dabit3/aws-amplify-workshop-react#working-with-storage)
+- [Analytics](https://github.com/dabit3/aws-amplify-workshop-react#adding-analytics)
+- [Multiple Environments](https://github.com/dabit3/aws-amplify-workshop-react#working-with-multiple-environments)
+- [Deploying via the Amplify Console](https://github.com/dabit3/aws-amplify-workshop-react#deploying-via-the-amplify-console)
+- [Removing / Deleting Services](https://github.com/dabit3/aws-amplify-workshop-react#removing-services)
 
 ## Redeeming our AWS Credit   
 1. Visit the [AWS Console](https://console.aws.amazon.com/console).

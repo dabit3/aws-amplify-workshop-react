@@ -579,6 +579,10 @@ import { listCoins } from './graphql/queries'
 function App() {
   const [coins, updateCoins] = useState([])
 
+   useEffect(() => {
+    getData()
+   }, [])
+
   async function getData() {
     try {
       const coinData = await await API.graphql(graphqlOperation(listCoins))
@@ -588,10 +592,6 @@ function App() {
       console.log('error fetching data..', err)
     }
   }
-
-  useEffect(() => {
-    getData()
-  }, [])
 
   return (
     <div>

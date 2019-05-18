@@ -7,9 +7,10 @@ In this workshop we'll learn how to build cloud-enabled web applications with Gr
 ### Topics we'll be covering:
 
 - [Authentication](https://github.com/dabit3/aws-amplify-workshop-react#adding-authentication)
+- [GraphQL API with AWS AppSync](https://github.com/dabit3/aws-amplify-workshop-react#adding-a-graphql-api)
+- [Adding Authorization to the GraphQL API](https://github.com/dabit3/aws-amplify-workshop-react#adding-authorization-to-the-graphql-api)
 - [Serverless Functions](https://github.com/dabit3/aws-amplify-workshop-react#adding-a-serverless-function)
 - [REST API with a Lambda Function](https://github.com/dabit3/aws-amplify-workshop-react#adding-a-rest-api)
-- [GraphQL API with AWS AppSync](https://github.com/dabit3/aws-amplify-workshop-react#adding-a-graphql-api)
 - [Adding Storage with Amazon S3](https://github.com/dabit3/aws-amplify-workshop-react#working-with-storage)
 - [Analytics](https://github.com/dabit3/aws-amplify-workshop-react#adding-analytics)
 - [Multiple Environments](https://github.com/dabit3/aws-amplify-workshop-react#working-with-multiple-environments)
@@ -233,6 +234,354 @@ signUp = async() => {
 }
 ```
 
+## Adding a GraphQL API
+
+To add a GraphQL API, we can use the following command:
+
+```sh
+amplify add api
+```
+
+Answer the following questions
+
+- Please select from one of the above mentioned services __GraphQL__   
+- Provide API name: __CryptoGraphQL__   
+- Choose an authorization type for the API __API key__   
+- Do you have an annotated GraphQL schema? __N__   
+- Do you want a guided schema creation? __Y__   
+- What best describes your project: __Single object with fields (e.g. “Todo” with ID, name, description)__   
+- Do you want to edit the schema now? (Y/n) __Y__   
+
+> When prompted, update the schema to the following:   
+
+```graphql
+type Coin @model {
+  id: ID!
+  clientId: ID
+  name: String!
+  symbol: String!
+  price: Float!
+}
+```
+
+> Next, let's push the configuration to our account:
+
+```bash
+amplify push
+```
+
+- Do you want to generate code for your newly created GraphQL API __Y__
+- Choose the code generation language target: __javascript__
+- Enter the file name pattern of graphql queries, mutations and subscriptions: __(src/graphql/**/*.js)__
+- Do you want to generate/update all possible GraphQL operations - queries, mutations and subscriptions? __Y__
+- Enter maximum statement depth [increase from default if your schema is deeply nested] __2__
+
+To view the service you can run the `console` command the feature you'd like to view:
+
+```sh
+amplify console api
+```
+
+### Adding mutations from within the AWS AppSync Console
+
+In the AWS AppSync console, open your API & then click on Queries.
+
+Execute the following mutation to create a new coin in the API:
+
+```graphql
+mutation createCoin {
+  createCoin(input: {
+    name: "Bitcoin"
+    symbol: "BTC"
+    price: 9000
+  }) {
+    id name symbol price
+  }
+}
+```
+
+Now, let's query for the coin:
+
+```graphql
+query listCoins {
+  listCoins {
+    items {
+      id
+      name
+      symbol
+      price
+    }
+  }
+}
+```
+
+We can even add search / filter capabilities when querying:
+
+```graphql
+query listCoins {
+  listCoins(filter: {
+    price: {
+      gt: 2000
+    }
+  }) {
+    items {
+      id
+      name
+      symbol
+      price
+    }
+  }
+}
+```
+
+### Interacting with the GraphQL API from our client application - Querying for data
+
+Now that the GraphQL API is created we can begin interacting with it!
+
+The first thing we'll do is perform a query to fetch data from our API.
+
+To do so, we need to define the query, execute the query, store the data in our state, then list the items in our UI.
+
+### src/App.js
+
+```js
+// src/App.js
+import React, { useEffect, useState } from 'react'
+
+// imports from Amplify library
+import { API, graphqlOperation } from 'aws-amplify'
+
+// import query
+import { listCoins } from './graphql/queries'
+
+function App() {
+  const [coins, updateCoins] = useState([])
+
+  useEffect(() => {
+    getData()
+  }, [])
+
+  async function getData() {
+    try {
+      const coinData = await await API.graphql(graphqlOperation(listCoins))
+      console.log('data from API: ', coinData)
+      updateCoins(coinData.data.listCoins.items)
+    } catch (err) {
+      console.log('error fetching data..', err)
+    }
+  }
+
+  return (
+    <div>
+      {
+        coins.map((c, i) => (
+          <div key={i}>
+            <h2>{c.name}</h2>
+            <h4>{c.symbol}</h4>
+            <p>{c.price}</p>
+          </div>
+        ))
+      }
+    </div>
+  )
+}
+
+export default App
+```
+
+## Performing mutations
+
+ Now, let's look at how we can create mutations. Let's change the component to use a `useReducer` hook.
+
+```js
+// src/App.js
+import React, { useEffect, useReducer } from 'react'
+import { API, graphqlOperation } from 'aws-amplify'
+import { listCoins } from './graphql/queries'
+import { createCoin as CreateCoin } from './graphql/mutations'
+
+// import uuid to create a unique client ID
+import uuid from 'uuid/v4'
+
+const CLIENT_ID = uuid()
+
+// create initial state
+const initialState = {
+  name: '', price: '', symbol: '', coins: []
+}
+
+// create reducer to update state
+function reducer(state, action) {
+  switch(action.type) {
+    case 'SETCOINS':
+      return { ...state, coins: action.coins }
+    case 'SETINPUT':
+      return { ...state, [action.key]: action.value }
+    default:
+      return state
+  }
+}
+
+function App() {
+  const [state, dispatch] = useReducer(reducer, initialState)
+
+  useEffect(() => {
+    getData()
+  }, [])
+
+  async function getData() {
+    try {
+      const coinData = await await API.graphql(graphqlOperation(listCoins))
+      console.log('data from API: ', coinData)
+      dispatch({ type: 'SETCOINS', coins: coinData.data.listCoins.items})
+    } catch (err) {
+      console.log('error fetching data..', err)
+    }
+  }
+
+  async function createCoin() {
+    const { name, price, symbol } = state
+    if (name === '' || price === '' || symbol === '') return
+    const coin = {
+      name, price: parseFloat(price), symbol, clientId: CLIENT_ID
+    }
+    const coins = [...state.coins, coin]
+    dispatch({ type: 'SETCOINS', coins })
+    console.log('coin:', coin)
+    
+    try {
+      await API.graphql(graphqlOperation(CreateCoin, { input: coin }))
+      console.log('item created!')
+    } catch (err) {
+      console.log('error creating coin...', err)
+    }
+  }
+
+  // change state then user types into input
+  function onChange(e) {
+    dispatch({ type: 'SETINPUT', key: e.target.name, value: e.target.value })
+  }
+
+  // add UI with event handlers to manage user input
+  return (
+    <div>
+      <input
+        name='name'
+        placeholder='name'
+        onChange={onChange}
+        value={state.name}
+      />
+      <input
+        name='price'
+        placeholder='price'
+        onChange={onChange}
+        value={state.price}
+      />
+      <input
+        name='symbol'
+        placeholder='symbol'
+        onChange={onChange}
+        value={state.symbol}
+      />
+      <button onClick={createCoin}>Create Coin</button>
+      {
+        state.coins.map((c, i) => (
+          <div key={i}>
+            <h2>{c.name}</h2>
+            <h4>{c.symbol}</h4>
+            <p>{c.price}</p>
+          </div>
+        ))
+      }
+    </div>
+  )
+}
+
+export default App
+```
+
+### GraphQL Subscriptions
+
+Next, let's see how we can create a subscription to subscribe to changes of data in our API.
+
+To do so, we need to define the subscription, listen for the subscription, & update the state whenever a new piece of data comes in through the subscription.
+
+```js
+// import the subscription
+import { onCreateCoin } from './graphql/subscriptions'
+
+// update reducer
+function reducer(state, action) {
+  switch(action.type) {
+    case 'SETCOINS':
+      return { ...state, coins: action.coins }
+    case 'SETINPUT':
+      return { ...state, [action.key]: action.value }
+    // new 👇
+    case 'ADDCOIN':
+      return { ...state, coins: [...state.coins, action.coin] }
+    default:
+      return state
+  }
+}
+
+// subscribe in useEffect
+useEffect(() => {
+  const subscription = API.graphql(graphqlOperation(onCreateCoin)).subscribe({
+      next: (eventData) => {
+        const coin = eventData.value.data.onCreateCoin
+        if (coin.clientId === CLIENT_ID) return
+        dispatch({ type: 'ADDCOIN', coin  })
+      }
+  })
+  return () => subscription.unsubscribe()
+}, [])
+```
+
+## Adding Authorization to the GraphQL API
+
+To add authorization to the API, we can re-configure the API to use our cognito identity pool. To do so, we can run `amplify configure api`:
+
+```sh
+amplify configure api
+```
+Please select from one of the below mentioned services: __GraphQL__
+Choose an authorization type for the API: __Amazon Cognito User Pool__
+
+Next, we'll run `amplify push`:
+
+```sh
+amplify push
+```
+
+- Do you want to update code for your updated GraphQL API __N__
+
+Now, we can only access the API with a logged in user.
+
+### Adding fine-grained access controls to the GraphQL API
+
+Next, let's add a field that can only be accessed by the current user.
+
+To do so, we'll update the schema to add the following new type below the existing Coin type:
+
+```graphql
+type Note @model @auth(rules: [{allow: owner}]) {
+  id: ID!
+  title: String!
+  description: String
+}
+```
+
+Next, we'll deploy the updates to our API:
+
+```sh
+amplify push
+```
+
+Now, the operations associated with this field will only be accessible by the creator of the item.
+
+To test it out, try creating a new user & accessing a note from another user.
+
 ## Adding a Serverless Function
 
 ### Adding a basic Lambda Function
@@ -455,329 +804,6 @@ function App() {
 
 export default App
 ```
-
-## Adding a GraphQL API
-
-To add a GraphQL API, we can use the following command:
-
-```sh
-amplify add api
-```
-
-Answer the following questions
-
-- Please select from one of the above mentioned services __GraphQL__   
-- Provide API name: __CryptoGraphQL__   
-- Choose an authorization type for the API __API key__   
-- Do you have an annotated GraphQL schema? __N__   
-- Do you want a guided schema creation? __Y__   
-- What best describes your project: __Single object with fields (e.g. “Todo” with ID, name, description)__   
-- Do you want to edit the schema now? (Y/n) __Y__   
-
-> When prompted, update the schema to the following:   
-
-```graphql
-type Coin @model {
-  id: ID!
-  clientId: ID
-  name: String!
-  symbol: String!
-  price: Float!
-}
-```
-
-> Next, let's push the configuration to our account:
-
-```bash
-amplify push
-```
-
-- Do you want to generate code for your newly created GraphQL API __Y__
-- Choose the code generation language target: __javascript__
-- Enter the file name pattern of graphql queries, mutations and subscriptions: __(src/graphql/**/*.js)__
-- Do you want to generate/update all possible GraphQL operations - queries, mutations and subscriptions? __Y__
-- Enter maximum statement depth [increase from default if your schema is deeply nested] __2__
-
-To view the service you can run the `console` command the feature you'd like to view:
-
-```sh
-amplify console api
-```
-
-### Adding mutations from within the AWS AppSync Console
-
-In the AWS AppSync console, open your API & then click on Queries.
-
-Execute the following mutation to create a new coin in the API:
-
-```graphql
-mutation createCoin {
-  createCoin(input: {
-    name: "Bitcoin"
-    symbol: "BTC"
-    price: 9000
-  }) {
-    id name symbol price
-  }
-}
-```
-
-Now, let's query for the coin:
-
-```graphql
-query listCoins {
-  listCoins {
-    items {
-      id
-      name
-      symbol
-      price
-    }
-  }
-}
-```
-
-We can even add search / filter capabilities when querying:
-
-```graphql
-query listCoins {
-  listCoins(filter: {
-    price: {
-      gt: 2000
-    }
-  }) {
-    items {
-      id
-      name
-      symbol
-      price
-    }
-  }
-}
-```
-
-### Interacting with the GraphQL API from our client application - Querying for data
-
-Now that the GraphQL API is created we can begin interacting with it!
-
-The first thing we'll do is perform a query to fetch data from our API.
-
-To do so, we need to define the query, execute the query, store the data in our state, then list the items in our UI.
-
-### src/App.js
-
-```js
-// src/App.js
-import React, { useEffect, useState } from 'react'
-
-// imports from Amplify library
-import { API, graphqlOperation } from 'aws-amplify'
-
-// import query
-import { listCoins } from './graphql/queries'
-
-function App() {
-  const [coins, updateCoins] = useState([])
-
-  useEffect(() => {
-    getData()
-  }, [])
-
-  async function getData() {
-    try {
-      const coinData = await await API.graphql(graphqlOperation(listCoins))
-      console.log('data from API: ', coinData)
-      updateCoins(coinData.data.listCoins.items)
-    } catch (err) {
-      console.log('error fetching data..', err)
-    }
-  }
-
-  return (
-    <div>
-      {
-        coins.map((c, i) => (
-          <div key={i}>
-            <h2>{c.name}</h2>
-            <h4>{c.symbol}</h4>
-            <p>{c.price}</p>
-          </div>
-        ))
-      }
-    </div>
-  )
-}
-
-export default App
-```
-
-## Performing mutations
-
- Now, let's look at how we can create mutations. Let's change the component to use a `useReducer` hook.
-
-```js
-// src/App.js
-import React, { useEffect, useReducer } from 'react'
-import { API, graphqlOperation } from 'aws-amplify'
-import { listCoins } from './graphql/queries'
-import { createCoin as CreateCoin } from './graphql/mutations'
-
-// import uuid to create a unique client ID
-import uuid from 'uuid/v4'
-
-const CLIENT_ID = uuid()
-
-// create initial state
-const initialState = {
-  name: '', price: '', symbol: '', coins: []
-}
-
-function reducer(state, action) {
-  switch(action.type) {
-    case 'SETCOINS':
-      return { ...state, coins: action.coins }
-    case 'SETINPUT':
-      return { ...state, [action.key]: action.value }
-    default:
-      return state
-  }
-}
-
-function App() {
-  const [state, dispatch] = useReducer(reducer, initialState)
-
-  useEffect(() => {
-    getData()
-  }, [])
-
-  async function getData() {
-    try {
-      const coinData = await await API.graphql(graphqlOperation(listCoins))
-      console.log('data from API: ', coinData)
-      dispatch({ type: 'SETCOINS', coins: coinData.data.listCoins.items})
-    } catch (err) {
-      console.log('error fetching data..', err)
-    }
-  }
-
-  async function createCoin() {
-    const { name, price, symbol } = state
-    if (name === '' || price === '' || symbol === '') return
-    const coin = {
-      name, price: parseFloat(price), symbol, clientId: CLIENT_ID
-    }
-    const coins = [...state.coins, coin]
-    dispatch({ type: 'SETCOINS', coins })
-    console.log('coin:', coin)
-    
-    try {
-      await API.graphql(graphqlOperation(CreateCoin, { input: coin }))
-      console.log('item created!')
-    } catch (err) {
-      console.log('error creating coin...', err)
-    }
-  }
-
-  // change state then user types into input
-  function onChange(e) {
-    dispatch({ type: 'SETINPUT', key: e.target.name, value: e.target.value })
-  }
-
-  // add UI with event handlers to manage user input
-  return (
-    <div>
-      <input
-        name='name'
-        placeholder='name'
-        onChange={onChange}
-        value={state.name}
-      />
-      <input
-        name='price'
-        placeholder='price'
-        onChange={onChange}
-        value={state.price}
-      />
-      <input
-        name='symbol'
-        placeholder='symbol'
-        onChange={onChange}
-        value={state.symbol}
-      />
-      <button onClick={createCoin}>Create Coin</button>
-      {
-        state.coins.map((c, i) => (
-          <div key={i}>
-            <h2>{c.name}</h2>
-            <h4>{c.symbol}</h4>
-            <p>{c.price}</p>
-          </div>
-        ))
-      }
-    </div>
-  )
-}
-
-export default App
-```
-
-### GraphQL Subscriptions
-
-Next, let's see how we can create a subscription to subscribe to changes of data in our API.
-
-To do so, we need to define the subscription, listen for the subscription, & update the state whenever a new piece of data comes in through the subscription.
-
-```js
-// import the subscription
-import { onCreateCoin } from './graphql/subscriptions'
-
-// update reducer
-function reducer(state, action) {
-  switch(action.type) {
-    case 'SETCOINS':
-      return { ...state, coins: action.coins }
-    case 'SETINPUT':
-      return { ...state, [action.key]: action.value }
-    // new 👇
-    case 'ADDCOIN':
-      return { ...state, coins: [...state.coins, action.coin] }
-    default:
-      return state
-  }
-}
-
-// subscribe in useEffect
-useEffect(() => {
-  const subscription = API.graphql(graphqlOperation(onCreateCoin)).subscribe({
-      next: (eventData) => {
-        const coin = eventData.value.data.onCreateCoin
-        if (coin.clientId === CLIENT_ID) return
-        dispatch({ type: 'ADDCOIN', coin  })
-      }
-  })
-  return () => subscription.unsubscribe()
-}, [])
-```
-
-## Adding Basic Authorization to the GraphQL API
-
-To add authorization to the API, we can re-configure the API to use our cognito identity pool. To do so, we can run `amplify configure api`:
-
-```sh
-amplify configure api
-```
-Please select from one of the below mentioned services: __GraphQL__
-Choose an authorization type for the API: __Amazon Cognito User Pool__
-
-Next, we'll run `amplify push`:
-
-```sh
-amplify push
-```
-
-- Do you want to update code for your updated GraphQL API __N__
-
-Now, we can only access the API with a logged in user.
 
 ## Working with Storage
 

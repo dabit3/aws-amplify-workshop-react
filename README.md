@@ -294,7 +294,7 @@ Done.
 Done running invoke function.
 ```
 
-Where is the event data coming from? It is coming from the values located in event.json in the function folder (__amplify/backend/function/basiclambda/src/event.json__). If you update the values here, you can simulate data coming arguments the event.
+> Where is the event data coming from? It is coming from the values located in event.json in the function folder (__amplify/backend/function/basiclambda/src/event.json__). If you update the values here, you can simulate data coming arguments the event.
 
 Feel free to test out the function by updating `event.json` with data of your own.
 

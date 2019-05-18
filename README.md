@@ -572,6 +572,7 @@ import React, { useEffect, useState } from 'react'
 
 // imports from Amplify library
 import { API, graphqlOperation } from 'aws-amplify'
+
 // import query
 import { listCoins } from './graphql/queries'
 

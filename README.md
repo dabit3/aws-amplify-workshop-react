@@ -579,9 +579,9 @@ import { listCoins } from './graphql/queries'
 function App() {
   const [coins, updateCoins] = useState([])
 
-   useEffect(() => {
+  useEffect(() => {
     getData()
-   }, [])
+  }, [])
 
   async function getData() {
     try {
@@ -759,7 +759,7 @@ useEffect(() => {
 }, [])
 ```
 
-### Adding Basic Authorization to the GraphQL API
+## Adding Basic Authorization to the GraphQL API
 
 To add authorization to the API, we can re-configure the API to use our cognito identity pool. To do so, we can run `amplify configure api`:
 

@@ -274,8 +274,8 @@ Next, we can test this out by running:
 amplify function invoke basiclambda
 ```
 
-- Provide the name of the script file that contains your handler function: index.js
--  Provide the name of the handler function to invoke: handler
+- Provide the name of the script file that contains your handler function: __index.js__
+-  Provide the name of the handler function to invoke: __handler__
 
 You'll notice the following output from your terminal:
 

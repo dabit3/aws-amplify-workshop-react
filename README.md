@@ -14,7 +14,6 @@ In this workshop we'll learn how to build cloud-enabled web applications with Gr
 - [Analytics](https://github.com/dabit3/aws-amplify-workshop-react/tree/react-europe#adding-analytics)
 - [Multiple Environments](https://github.com/dabit3/aws-amplify-workshop-react/tree/react-europe#working-with-multiple-environments)
 - [Deploying via the Amplify Console](https://github.com/dabit3/aws-amplify-workshop-react/tree/react-europe#deploying-via-the-amplify-console)
-- [Adding Fine-grained Authorization to the GraphQL API](https://github.com/dabit3/aws-amplify-workshop-react/tree/react-europe#adding-fine-grained-authorization-to-the-graphql-api)
 - [Removing / Deleting Services](https://github.com/dabit3/aws-amplify-workshop-react/tree/react-europe#removing-services)
 
 ## Redeeming our AWS Credit   
@@ -340,7 +339,7 @@ app.get('/coins', function(req, res) {
   axios.get(apiUrl)
     .then(response => {
       res.json({
-        data: response.data
+        coins: response.data.data
       })
     })
     .catch(err => res.json({ error: err }))
@@ -420,107 +419,42 @@ Let's request some data from the API:
 
 ```js
 // src/App.js
-
+import React, { useEffect, useState } from 'react'
 import { API } from 'aws-amplify'
 
-// create initial state
-state = { pets: [] }
+function App() {
+  const [coins, updateCoins] = useState([])
 
-// fetch data at componentDidMount
-componentDidMount() {
-  this.getData()
-}
-getData = async() => {
-  try {
-    const data = await API.get('amplifyrestapi', '/pets')
-    console.log('data from Lambda REST API: ', data)
-    this.setState({ pets: data.pets })
-  } catch (err) {
-    console.log('error fetching data..', err)
+  async function getData() {
+    try {
+      // const coinData = await API.get('cryptoapi', '/coins')
+      const data = await API.get('cryptoapi', '/coins?limit=5&start=100')
+      console.log('data from Lambda REST API: ', data)
+      updateCoins(data.coins)
+    } catch (err) {
+      console.log('error fetching data..', err)
+    }
   }
+
+  useEffect(() => {
+    getData()
+  }, [])
+
+  return (
+    <div>
+      {
+        coins.map((c, i) => (
+          <div key={i}>
+            <h2>{c.name}</h2>
+            <p>{c.price_usd}</p>
+          </div>
+        ))
+      }
+    </div>
+  )
 }
 
-// implement into render method
-{
-  this.state.pets.map((p, i) => (
-    <p key={i}>{p}</p>
-  ))
-}
-```
-
-### Fetching data from another API in a Lambda function.
-
-Next, let's configure the REST API to add another endpoint that will fetch data from an external resource.
-
-First, we'll need to configure the API to know about the new path:
-
-```sh
-amplify configure api
-```
-
-- Please select from one of the below mentioned services __REST__
-- Please select the REST API you would want to update __amplifyrestapi__
-- What would you like to do __Add another path__
-- Provide a path (e.g., /items) __/people__
-- Choose a Lambda source __Use a Lambda function already added in the current Amplify project__
-- Choose the Lambda function to invoke by this path __amplifyrestapilambda__
-- Restrict API access __Yes__
-- Who should have access? __Authenticated users only__
-- What kind of access do you want for Authenticated users __read/write__
-- Do you want to add another path? __No__
-
-The next thing we need to do is install `axios` in our Lambda function folder.
-
-Navigate to __amplify/backend/function/<FUNCTION_NAME>/src__ and install __axios__:
-
-```sh
-yarn add axios
-
-# or
-
-npm install axios
-```
-
-Next, in __amplify/backend/function/<FUNCTION_NAME>/src/app.js__, let's add a new endpoint that will fetch a list of people from the [Star Wars API](https://swapi.co/).
-
-```js
-// require axios
-var axios = require('axios')
-
-// add new /people endpoint
-app.get('/people', function(req, res) {
-  axios.get('https://swapi.co/api/people/')
-    .then(response => {
-      res.json({
-        people: response.data.results,
-        success: 'get call succeed!',
-        url: req.url
-      });
-    })
-    .catch(err => {
-      res.json({
-        error: 'error fetching data'
-      });
-    })
-});
-```
-
-Now we can add a new function called getPeople that will call this API:
-
-```js
-componentDidMount() {
-  this.getData()
-  this.getPeople() // new
-}
-
-getPeople = async() => {
-  try {
-    const data = await API.get('amplifyrestapi', '/people')
-    console.log('data from new people endpoint:', data)
-  } catch (err) {
-    console.log('error fetching data..', err)
-  }
-}
+export default App
 ```
 
 ## Adding a GraphQL API
@@ -534,7 +468,7 @@ amplify add api
 Answer the following questions
 
 - Please select from one of the above mentioned services __GraphQL__   
-- Provide API name: __GraphQLPets__   
+- Provide API name: __CryptoGraphQL__   
 - Choose an authorization type for the API __API key__   
 - Do you have an annotated GraphQL schema? __N__   
 - Do you want a guided schema creation? __Y__   
@@ -544,11 +478,12 @@ Answer the following questions
 > When prompted, update the schema to the following:   
 
 ```graphql
-type Pet @model {
+type Coin @model {
   id: ID!
   clientId: ID
   name: String!
-  description: String!
+  symbol: String!
+  price: Float!
 }
 ```
 
@@ -564,10 +499,10 @@ amplify push
 - Do you want to generate/update all possible GraphQL operations - queries, mutations and subscriptions? __Y__
 - Enter maximum statement depth [increase from default if your schema is deeply nested] __2__
 
-To view the services created by Amplify at any time you can run the `console` command & choose the feature you'd like to view:
+To view the service you can run the `console` command the feature you'd like to view:
 
 ```sh
-amplify console
+amplify console api
 ```
 
 ### Adding mutations from within the AWS AppSync Console
@@ -577,12 +512,13 @@ In the AWS AppSync console, open your API & then click on Queries.
 Execute the following mutation to create a new pet in the API:
 
 ```graphql
-mutation createPet {
-  createPet(input: {
-    name: "Zeus"
-    description: "Best dog in the western hemisphere"
+mutation createCoin {
+  createCoin(input: {
+    name: "Bitcoin"
+    symbol: "BTC"
+    price: 9000
   }) {
-    id
+    id name symbol price
   }
 }
 ```
@@ -590,12 +526,13 @@ mutation createPet {
 Now, let's query for the pet:
 
 ```graphql
-query listPets {
-  listPets {
+query listCoins {
+  listCoins {
     items {
       id
       name
-      description
+      symbol
+      price
     }
   }
 }
@@ -604,16 +541,17 @@ query listPets {
 We can even add search / filter capabilities when querying:
 
 ```graphql
-query listPets {
-  listPets(filter: {
-    description: {
-      contains: "dog"
+query listCoins {
+  listCoins(filter: {
+    price: {
+      gt: 2000
     }
   }) {
     items {
       id
       name
-      description
+      symbol
+      price
     }
   }
 }
@@ -630,47 +568,44 @@ To do so, we need to define the query, execute the query, store the data in our 
 ### src/App.js
 
 ```js
-import React from 'react'
-import './App.css'
+// src/App.js
+import React, { useEffect, useState } from 'react'
 
 // imports from Amplify library
 import { API, graphqlOperation } from 'aws-amplify'
 // import query
-import { listPets as ListPets } from './graphql/queries'
+import { listCoins } from './graphql/queries'
 
-class App extends React.Component {
-  // create initial state
-  state = {
-    pets: []
-  }
-  // execute the query in componentDidMount
-  async componentDidMount() {
+function App() {
+  const [coins, updateCoins] = useState([])
+
+  async function getData() {
     try {
-      const pets = await API.graphql(graphqlOperation(ListPets))
-      console.log('pets:', pets)
-      this.setState({
-        pets: pets.data.listPets.items
-      })
+      const coinData = await await API.graphql(graphqlOperation(listCoins))
+      console.log('data from API: ', coinData)
+      updateCoins(coinData.data.listCoins.items)
     } catch (err) {
-      console.log('error fetching pets...', err)
+      console.log('error fetching data..', err)
     }
   }
-  // implement into render method
-  render() {
-    return (
-      <div className="App">
-        <h2>Amplify App</h2>
-        {
-          this.state.pets.map((pet, index) => (
-            <div key={index}>
-              <h3>{pet.name}</h3>
-              <p>{pet.description}</p>
-            </div>
-          ))
-        }
-      </div>
-    );
-  }
+
+  useEffect(() => {
+    getData()
+  }, [])
+
+  return (
+    <div>
+      {
+        coins.map((c, i) => (
+          <div key={i}>
+            <h2>{c.name}</h2>
+            <h4>{c.symbol}</h4>
+            <p>{c.price}</p>
+          </div>
+        ))
+      }
+    </div>
+  )
 }
 
 export default App
@@ -678,57 +613,112 @@ export default App
 
 ## Performing mutations
 
- Now, let's look at how we can create mutations.
+ Now, let's look at how we can create mutations. Let's change the component to use a `useReducer` hook.
 
 ```js
+// src/App.js
+import React, { useEffect, useReducer } from 'react'
+import { API, graphqlOperation } from 'aws-amplify'
+import { listCoins } from './graphql/queries'
+import { createCoin as CreateCoin } from './graphql/mutations'
+
 // import uuid to create a unique client ID
 import uuid from 'uuid/v4'
 
-// import the mutation
-import { createPet as CreatePet } from './graphql/mutations'
-
 const CLIENT_ID = uuid()
 
-// update initial state
-state = {
-  name: '', description: '', pets: []
+// create initial state
+const initialState = {
+  name: '', price: '', symbol: '', coins: []
 }
 
-createPet = async() => {
-  const { name, description } = this.state
-  if (name === '' || description === '') return
-  const pet = {
-    name, description, clientId: CLIENT_ID
-  }
-  const updatedPetArray = [...this.state.pets, pet]
-  this.setState({ pets: updatedPetArray })
-  try {
-    await API.graphql(graphqlOperation(CreatePet, { input: pet }))
-    console.log('item created!')
-  } catch (err) {
-    console.log('error creating pet...', err)
+function reducer(state, action) {
+  switch(action.type) {
+    case 'SETCOINS':
+      return { ...state, coins: action.coins }
+    case 'SETINPUT':
+      return { ...state, [action.key]: action.value }
+    default:
+      return state
   }
 }
 
-// change state then user types into input
-onChange = (event) => {
-  this.setState({
-    [event.target.name]: event.target.value
-  })
+function App() {
+  const [state, dispatch] = useReducer(reducer, initialState)
+
+  useEffect(() => {
+    getData()
+  }, [])
+
+  async function getData() {
+    try {
+      const coinData = await await API.graphql(graphqlOperation(listCoins))
+      console.log('data from API: ', coinData)
+      dispatch({ type: 'SETCOINS', coins: coinData.data.listCoins.items})
+    } catch (err) {
+      console.log('error fetching data..', err)
+    }
+  }
+
+  async function createCoin() {
+    const { name, price, symbol } = state
+    if (name === '' || price === '' || symbol === '') return
+    const coin = {
+      name, price: parseFloat(price), symbol, clientId: CLIENT_ID
+    }
+    const coins = [...state.coins, coin]
+    dispatch({ type: 'SETCOINS', coins })
+    console.log('coin:', coin)
+    
+    try {
+      await API.graphql(graphqlOperation(CreateCoin, { input: coin }))
+      console.log('item created!')
+    } catch (err) {
+      console.log('error creating coin...', err)
+    }
+  }
+
+  // change state then user types into input
+  function onChange(e) {
+    dispatch({ type: 'SETINPUT', key: e.target.name, value: e.target.value })
+  }
+
+  // add UI with event handlers to manage user input
+  return (
+    <div>
+      <input
+        name='name'
+        placeholder='name'
+        onChange={onChange}
+        value={state.name}
+      />
+      <input
+        name='price'
+        placeholder='price'
+        onChange={onChange}
+        value={state.price}
+      />
+      <input
+        name='symbol'
+        placeholder='symbol'
+        onChange={onChange}
+        value={state.symbol}
+      />
+      <button onClick={createCoin}>Create Coin</button>
+      {
+        state.coins.map((c, i) => (
+          <div key={i}>
+            <h2>{c.name}</h2>
+            <h4>{c.symbol}</h4>
+            <p>{c.price}</p>
+          </div>
+        ))
+      }
+    </div>
+  )
 }
 
-// add UI with event handlers to manage user input
-<input
-  name='name'
-  onChange={this.onChange}
-  value={this.state.name}
-/>
-<input
-  name='description'
-  onChange={this.onChange}
-  value={this.state.description}
-/>
-<button onClick={this.createPet}>Create Pet</button>
+export default App
 ```
 
 ### GraphQL Subscriptions
@@ -739,30 +729,34 @@ To do so, we need to define the subscription, listen for the subscription, & upd
 
 ```js
 // import the subscription
-import { onCreatePet as OnCreatePet } from './graphql/subscriptions'
+import { onCreateCoin } from './graphql/subscriptions'
 
-// define the subscription in the class
-subscription = {}
+// update reducer
+function reducer(state, action) {
+  switch(action.type) {
+    case 'SETCOINS':
+      return { ...state, coins: action.coins }
+    case 'SETINPUT':
+      return { ...state, [action.key]: action.value }
+    // new 👇
+    case 'ADDCOIN':
+      return { ...state, coins: [...state.coins, action.coin] }
+    default:
+      return state
+  }
+}
 
-// subscribe in componentDidMount
-componentDidMount() {
-  this.subscription = API.graphql(
-    graphqlOperation(OnCreatePet)
-  ).subscribe({
+// subscribe in useEffect
+useEffect(() => {
+  const subscription = API.graphql(graphqlOperation(onCreateCoin)).subscribe({
       next: (eventData) => {
-        console.log('eventData', eventData)
-        const pet = eventData.value.data.onCreatePet
-        if (pet.clientId === CLIENT_ID) return
-        
-        const pets = [ ...this.state.pets, pet]
-        this.setState({ pets })
+        const coin = eventData.value.data.onCreateCoin
+        if (coin.clientId === CLIENT_ID) return
+        dispatch({ type: 'ADDCOIN', coin  })
       }
   })
-}
-
-componentWillUnmount() {
-  this.subscription.unsubscribe()
-}
+  return () => subscription.unsubscribe()
+}, [])
 ```
 
 ### Adding Basic Authorization to the GraphQL API
@@ -1085,202 +1079,6 @@ In the next screen, we'll create a new role & use this role to allow the Amplify
 Finally, we can click __Save and Deploy__ to deploy our application!
 
 Now, we can push updates to Master to update our application.
-
-## Adding Fine-grained Authorization to the GraphQL API
-
-Let's how how we can access the user's identity in the resolver. To do so, we'll first need to store the user's identity in the database table as userId & add a new index on the table to query for this user ID.
-
-__Adding an index to the table__
-
-Next, we'll want to add a new GSI (global secondary index) in the table. We do this so we can query on the index to gain new data access pattern.
-
-To add the index, open the [AppSync Console](https://console.aws.amazon.com/appsync/home), choose your API & click on __Data Sources__. Next, click on the data source link.
-
-From here, click on the __Indexes__ tab & click __Create index__.
-
-For the __Partition key__, input `userId` to create a `userId-index` Index name & click __Create index__.
-
-Next, we'll update the resolver for adding pets & querying for pets.
-
-#### Updating the resolvers
-
-In the folder __amplify/backend/api/GraphQLPets/resolvers__, create the following two resolvers:
-
-__Mutation.createPet.req.vtl__ & __Query.listPets.req.vtl__.
-
-__Mutation.createPet.req.vtl__
-
-```vtl
-$util.qr($context.args.input.put("createdAt", $util.time.nowISO8601()))
-$util.qr($context.args.input.put("updatedAt", $util.time.nowISO8601()))
-$util.qr($context.args.input.put("__typename", "Pet"))
-$util.qr($context.args.input.put("userId", $ctx.identity.sub))
-
-{
-  "version": "2017-02-28",
-  "operation": "PutItem",
-  "key": {
-      "id":     $util.dynamodb.toDynamoDBJson($util.defaultIfNullOrBlank($ctx.args.input.id, $util.autoId()))
-  },
-  "attributeValues": $util.dynamodb.toMapValuesJson($context.args.input),
-  "condition": {
-      "expression": "attribute_not_exists(#id)",
-      "expressionNames": {
-          "#id": "id"
-    }
-  }
-}
-```
-
-__Query.listPets.req.vtl__
-
-```vtl
-{
-    "version" : "2017-02-28",
-    "operation" : "Query",
-    "index" : "userId-index",
-    "query" : {
-        "expression": "userId = :userId",
-        "expressionValues" : {
-            ":userId" : $util.dynamodb.toDynamoDBJson($ctx.identity.sub)
-        }
-    }
-}
-```
-
-Next, run the push command again to update the API:
-
-```sh
-amplify push
-```
-
-> Now that we've added authorization to the API, we will have to log in if we would like to perform queries in the AppSync Console. To log in, find the `aws_user_pools_web_client_id` from `aws-exports.js` & log in using your `username` & `password`.
-
-Now when we create new pets the `userId` field will be populated with the `userId` of the logged-in user.
-
-When we query for the pets, we will only receive the data for the items that we created ourselves.
-
-```graphql
-query listPets {
-  listPets {
-    items {
-      id
-      name
-      description
-    }
-  }
-}
-```
-
-#### Creating custom resolvers (Advanced)
-
-Now let's say we want to define & use a custom GraphQL operation & create corresponding resolvers that do not yet exist? We can also do that using Amplify & the local environment.
-
-Let's create a query & resolvers that will query for __all__ pets in the API, similar to the functionality we had before changing the `listPets` resolver.
-
-To do so, we need to do three things:
-
-1. Define the operations we'd like to have available in our schema (add queries, mutations, subscriptions to __schema.graphql__).
-
-To do so, update __amplify/backend/api/GraphQLPets/schema.graphql__ to the following:
-
-```graphql
-type Pet @model {
-  id: ID!
-  clientId: ID
-  name: String!
-  description: String!
-}
-
-type ModelPetConnection {
-  items: [Pet]
-  nextToken: String
-}
-
-type Query {
-  listAllPets(limit: Int, nextToken: String): ModelPetConnection
-}
-```
-
-2. Create the request & response mapping templates in __amplify/backend/api/GraphQLPets/resolvers__.
-
-__Query.listAllPets.req.vtl__
-
-```vtl
-{
-    "version" : "2017-02-28",
-    "operation" : "Scan",
-    "limit": $util.defaultIfNull(${ctx.args.limit}, 20),
-    "nextToken": $util.toJson($util.defaultIfNullOrBlank($ctx.args.nextToken, null))
-}
-```
-
-__Query.listAllPets.res.vtl__
-
-```vtl
-{
-    "items": $util.toJson($ctx.result.items),
-    "nextToken": $util.toJson($util.defaultIfNullOrBlank($context.result.nextToken, null))
-}
-```
-
-3. Update __amplify/backend/api/GraphQLPets/stacks/CustomResources.json__ with the definition of the custom resource.
-
-Update the `Resources` field in __CustomResources.json__ to the following:
-
-```json
-{
-  ...rest of template,
-  "Resources": {
-    "QueryListAllPetsResolver": {
-      "Type": "AWS::AppSync::Resolver",
-      "Properties": {
-        "ApiId": {
-          "Ref": "AppSyncApiId"
-        },
-        "DataSourceName": "PetTable",
-        "TypeName": "Query",
-        "FieldName": "listAllPets",
-        "RequestMappingTemplateS3Location": {
-          "Fn::Sub": [
-            "s3://${S3DeploymentBucket}/${S3DeploymentRootKey}/resolvers/Query.listAllPets.req.vtl",
-            {
-              "S3DeploymentBucket": {
-                "Ref": "S3DeploymentBucket"
-              },
-              "S3DeploymentRootKey": {
-                "Ref": "S3DeploymentRootKey"
-              }
-            }
-          ]
-        },
-        "ResponseMappingTemplateS3Location": {
-          "Fn::Sub": [
-            "s3://${S3DeploymentBucket}/${S3DeploymentRootKey}/resolvers/Query.listAllPets.res.vtl",
-            {
-              "S3DeploymentBucket": {
-                "Ref": "S3DeploymentBucket"
-              },
-              "S3DeploymentRootKey": {
-                "Ref": "S3DeploymentRootKey"
-              }
-            }
-          ]
-        }
-      }
-    }
-  },
-  ...rest of template,
-}
-```
-
-Now that everything has been updated, run the push command again:
-
-```sh
-amplify push
-```
-
-Now, we should have a new query available in our AppSync API to list all pets.
 
 ## Removing Services
 

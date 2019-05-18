@@ -68,7 +68,7 @@ amplify configure
 > If you'd like to see a video walkthrough of this configuration process, click [here](https://www.youtube.com/watch?v=fWbM5DLh25U).
 
 Here we'll walk through the `amplify configure` setup. Once you've signed in to the AWS console, continue:
-- Specify the AWS Region: __us-east-1__
+- Specify the AWS Region: __eu-central-1__
 - Specify the username of the new IAM user: __amplify-workshop-user__
 > In the AWS Console, click __Next: Permissions__, __Next: Tags__, __Next: Review__, & __Create User__ to create the new IAM user. Then, return to the command line & press Enter.
 - Enter the access key of the newly created user:   
@@ -83,7 +83,7 @@ amplify init
 ```
 
 - Enter a name for the project: __amplifyreactapp__
-- Enter a name for the environment: __local__
+- Enter a name for the environment: __dev__
 - Choose your default editor: __Visual Studio Code (or your default editor)__   
 - Please choose the type of app that you're building __javascript__   
 - What javascript framework are you using __react__   
@@ -509,7 +509,7 @@ amplify console api
 
 In the AWS AppSync console, open your API & then click on Queries.
 
-Execute the following mutation to create a new pet in the API:
+Execute the following mutation to create a new coin in the API:
 
 ```graphql
 mutation createCoin {
@@ -523,7 +523,7 @@ mutation createCoin {
 }
 ```
 
-Now, let's query for the pet:
+Now, let's query for the coin:
 
 ```graphql
 query listCoins {
@@ -962,7 +962,7 @@ You can create multiple environments for your application in which to create & t
 
 When you create a new environment from an existing environment, you are given a copy of the entire backend application stack from the original project. When you make changes in the new environment, you are then able to test these new changes in the new environment & merge only the changes that have been made since the new environment was created back into the original environment.
 
-Let's take a look at how to create a new environment. In this new environment, we'll re-configure the GraphQL Schema to have another field for the pet owner.
+Let's take a look at how to create a new environment. In this new environment, we'll re-configure the GraphQL Schema to have another field for the coin rank.
 
 First, we'll initialize a new environment using `amplify env add`:
 
@@ -982,19 +982,20 @@ amplify env list
 
 | Environments |
 | ------------ |
-| local        |
+| dev          |
 | *apiupdate   |
 ```
 
-Now we can update the GraphQL Schema in `amplify/backend/api/GraphQLPets/schema.graphql` to the following (adding the `owner` field):
+Now we can update the GraphQL Schema in `amplify/backend/api/CryptoGraphQL/schema.graphql` to the following (adding the `rank` field):
 
 ```graphql
-type Pet @model {
-  id: ID!
-  clientId: ID
-  name: String!
-  description: String!
-  owner: String
+type Coin {
+	id: ID!
+	clientId: ID
+	name: String!
+	symbol: String!
+	price: Float!
+  rank: Int
 }
 ```
 
@@ -1023,7 +1024,7 @@ Current Environment: local
 
 | Category | Resource name   | Operation | Provider plugin   |
 | -------- | --------------- | --------- | ----------------- |
-| Api      | GraphQLPets     | Update    | awscloudformation |
+| Api      | CryptoGraphQL   | Update    | awscloudformation |
 | Auth     | cognito75a8ccb4 | No Change | awscloudformation |
 ```
 

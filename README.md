@@ -173,8 +173,7 @@ import { Auth } from 'aws-amplify'
 class App extends React.Component {
   async componentDidMount() {
     const user = await Auth.currentAuthenticatedUser()
-    console.log('user info:', user.signInUserSession.idToken.payload)
-    console.log('username:', user.username)
+    console.log('user:', user)
   }
 
   render() {

@@ -113,10 +113,10 @@ Now, we'll run the push command and the cloud resources will be created in our A
 amplify push
 ```
 
-To view the services created by Amplify at any time you can run the `console` command & choose the feature you'd like to view:
+To view the service you can run the `console` command the feature you'd like to view:
 
 ```sh
-amplify console
+amplify console auth
 ```
 
 ### Configuring the React applicaion
@@ -831,10 +831,10 @@ addToStorage = () => {
 
 This would create a folder called `javascript` in our S3 bucket & store a file called __MyReactComponent.js__ there with the code we specified in the second argument of `Storage.put`.
 
-To view the service in the AWS Console we can run the following command:
+To view the service you can run the `console` command the feature you'd like to view:
 
 ```sh
-amplify console auth
+amplify console analytics
 ```
 
 If we want to read everything from this folder, we can use `Storage.list`:

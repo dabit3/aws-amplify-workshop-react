@@ -582,6 +582,9 @@ Next, we'll deploy the updates to our API:
 amplify push
 ```
 
+- Do you want to update code for your updated GraphQL API: __Y__
+- Do you want to generate GraphQL statements (queries, mutations and subscription) based on your schema types? __Y__
+
 Now, the operations associated with this field will only be accessible by the creator of the item.
 
 To test it out, try creating a new user & accessing a note from another user.

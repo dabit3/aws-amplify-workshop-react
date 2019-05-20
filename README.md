@@ -754,7 +754,7 @@ amplify add api
 
 - Please select from one of the above mentioned services __REST__   
 - Provide a friendly name for your resource that will be used to label this category in the project: __cryptoapi__   
-- Provide a path, e.g. /items __/crypto__   
+- Provide a path, e.g. /items __/coins__   
 - Choose lambda source __Use a Lambda function already added in the current Amplify project__   
 - Choose the Lambda function to invoke by this path: __cryptofunction__   
 - Restrict API access __Y__

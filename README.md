@@ -815,6 +815,10 @@ function App() {
 export default withAuthenticator(App, { includeGreetings: true })
 ```
 
+#### Challenge
+
+Refactor the above component to use `useReducer` instead of `useState` to add an additional `loading` parameter to the intial state to indicate that the app is fetching and loading when launched.
+
 ## Working with Storage
 
 To add storage, we can use the following command:

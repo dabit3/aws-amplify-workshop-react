@@ -351,6 +351,7 @@ import React, { useEffect, useState } from 'react'
 
 // imports from Amplify library
 import { API, graphqlOperation } from 'aws-amplify'
+import { withAuthenticator } from 'aws-amplify-react'
 
 // import query
 import { listCoins } from './graphql/queries'
@@ -387,7 +388,7 @@ function App() {
   )
 }
 
-export default App
+export default withAuthenticator(App, { includeGreetings: true })
 ```
 
 ## Performing mutations
@@ -398,6 +399,7 @@ export default App
 // src/App.js
 import React, { useEffect, useReducer } from 'react'
 import { API, graphqlOperation } from 'aws-amplify'
+import { withAuthenticator } from 'aws-amplify-react'
 import { listCoins } from './graphql/queries'
 import { createCoin as CreateCoin } from './graphql/mutations'
 
@@ -498,7 +500,7 @@ function App() {
   )
 }
 
-export default App
+export default withAuthenticator(App, { includeGreetings: true })
 ```
 
 ### GraphQL Subscriptions
@@ -772,6 +774,7 @@ Let's request some data from the API:
 // src/App.js
 import React, { useEffect, useState } from 'react'
 import { API } from 'aws-amplify'
+import { withAuthenticator } from 'aws-amplify-react'
 
 function App() {
   const [coins, updateCoins] = useState([])
@@ -805,7 +808,7 @@ function App() {
   )
 }
 
-export default App
+export default withAuthenticator(App, { includeGreetings: true })
 ```
 
 ## Working with Storage

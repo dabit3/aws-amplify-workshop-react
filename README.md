@@ -365,7 +365,7 @@ function App() {
 
   async function getData() {
     try {
-      const coinData = await await API.graphql(graphqlOperation(listCoins))
+      const coinData = await API.graphql(graphqlOperation(listCoins))
       console.log('data from API: ', coinData)
       updateCoins(coinData.data.listCoins.items)
     } catch (err) {

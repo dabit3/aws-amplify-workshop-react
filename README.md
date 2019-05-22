@@ -201,20 +201,41 @@ To do this, we could create some initial state for these values & create an even
 
 ```js
 // initial state
-state = {
-  username: '', password: '', email: '', phone_number: ''
+import React, { useReducer } from 'react'
+
+// define initial state
+const initialState = {
+  username: '', password: '', email: ''
 }
 
+// create reducer
+function reducer(state, action) {
+  switch(action.type) {
+    case 'SET_INPUT':
+      return { ...state, [action.inputName]: action.inputValue }
+    default:
+      return state
+  }
+}
+
+// useReducer hook creates local state
+const [state, dispatch] = useReducer(reducer, initialState)
+
 // event handler
-onChange = (event) => {
-  this.setState({ [event.target.name]: event.target.value })
+function onChange(e) {
+  dispatch({
+    type: 'SET_INPUT',
+    inputName: e.target.name,
+    inputValue: e.target.value
+  })
 }
 
 // example of usage with input
 <input
   name='username'
   placeholder='username'
-  onChange={this.onChange}
+  value={state.username}
+  onChange={onChange}
 />
 ```
 
@@ -225,14 +246,17 @@ We'd also need to have a method that signed up & signed in users. We can us the 
 import { Auth } from 'aws-amplify'
 
 // Class method to sign up a user
-signUp = async() => {
-  const { username, password, email, phone_number } = this.state
+async function signUp() {
+  const { username, password, email } = state
   try {
-    await Auth.signUp({ username, password, attributes: { email, phone_number }})
+    await Auth.signUp({ username, password, attributes: { email }})
+    console.log('user successfully signed up!')
   } catch (err) {
     console.log('error signing up user...', err)
   }
 }
+
+<button onClick={signUp}>Sign Up</button>
 ```
 
 ## Adding a GraphQL API

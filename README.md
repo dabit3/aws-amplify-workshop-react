@@ -170,23 +170,25 @@ We can access the user's info now that they are signed in by calling `Auth.curre
 ### src/App.js
 
 ```js
+import React, { useEffect } from 'react'
 import { Auth } from 'aws-amplify'
 
-class App extends React.Component {
-  async componentDidMount() {
-    const user = await Auth.currentAuthenticatedUser()
-    console.log('user:', user)
-  }
-
-  render() {
-    return (
-      // existing code
-      <div className="App">
-       // rest of code
-      </div>
-    )
-  }
+function App() {
+  useEffect(() => {
+    Auth.currentAuthenticatedUser()
+      .then(user => console.log({ user }))
+      .catch(error => console.log({ error }))
+  })
+  return (
+    <div className="App">
+      <p>
+        Edit <code>src/App.js</code> and save to reload.
+      </p>
+    </div>
+  )
 }
+
+export default App
 ```
 
 ### Custom authentication strategies
@@ -875,22 +877,19 @@ For example, if we wanted to test it out we could store some text in a file like
 import { Storage } from 'aws-amplify'
 
 // create function to work with Storage
-addToStorage = () => {
-  Storage.put('javascript/MyReactComponent.js', `
+function addToStorage() {
+  await Storage.put('javascript/MyReactComponent.js', `
     import React from 'react'
     const App = () => (
       <p>Hello World</p>
     )
     export default App
   `)
-    .then (result => {
-      console.log('result: ', result)
-    })
-    .catch(err => console.log('error: ', err));
+  console.log('data stored in S3!')
 }
 
 // add click handler
-<button onClick={this.addToStorage}>Add To Storage</button>
+<button onClick={addToStorage}>Add To Storage</button>
 ```
 
 This would create a folder called `javascript` in our S3 bucket & store a file called __MyReactComponent.js__ there with the code we specified in the second argument of `Storage.put`.
@@ -904,73 +903,84 @@ amplify console analytics
 If we want to read everything from this folder, we can use `Storage.list`:
 
 ```js
-readFromStorage = () => {
-  Storage.list('javascript/')
-    .then(data => console.log('data from S3: ', data))
-    .catch(err => console.log('error'))
+readFromStorage() {
+  const data = Storage.list('javascript/')
+  console.log('data from S3: ', data)
 }
 ```
 
 If we only want to read the single file, we can use `Storage.get`:
 
 ```js
-readFromStorage = () => {
-  Storage.get('javascript/MyReactComponent.js')
-    .then(data => console.log('data from S3: ', data))
-    .catch(err => console.log('error'))
+readFromStorage() {
+  const data = Storage.get('javascript/MyReactComponent.js')
+  console.log('data from S3: ', data)
 }
 ```
 
 If we wanted to pull down everything, we can use `Storage.list`:
 
 ```js
-readFromStorage = () => {
-  Storage.list('')
-    .then(data => console.log('data from S3: ', data))
-    .catch(err => console.log('error'))
+function readFromStorage() {
+  const data = Storage.list('')
+  console.log('data from S3: ', data)
 }
 ```
 
 ### Working with images
 
-Working with images is also easy:
+Here's how you can store an image:
 
 ```js
-class S3ImageUpload extends React.Component {
-  onChange(e) {
-      const file = e.target.files[0];
-      Storage.put('example.png', file, {
-          contentType: 'image/png'
-      })
-      .then (result => console.log(result))
-      .catch(err => console.log(err));
+function App() {
+  async function onChange(e) {
+    const file = e.target.files[0];
+    await Storage.put('example.png', file)
+    console.log('image successfully stored!')
   }
 
-  render() {
-      return (
-          <input
-              type="file" accept='image'
-              onChange={(e) => this.onChange(e)}
-          />
-      )
-  }
+  return (
+    <input
+      type="file" accept='image'
+      onChange={(e) => this.onChange(e)}
+    />
+  )
 }
-
 ```
 
-We can even use the S3Album component, one of a few components in the AWS Amplify React library to create a preconfigured photo picker:
+Here's how you can read and display an image:
+
+```js
+import React, { useState } from 'react'
+
+function App() {
+  const [imageUrl, updateImage] = useState('')
+
+  async function fetchImage() {
+    const imagePath = await Storage.get('example.png')
+    updateImage(imagePath)
+  }
+
+  return (
+    <div>
+      <img src={imageUrl} />
+      <button onClick={fetchImage}>Fetch Image</button>
+    </div>
+  )
+}
+```
+
+We can even use the S3Album component, one of a few components in the AWS Amplify React library to create a pre-configured photo picker:
 
 ```js
 import { S3Album, withAuthenticator } from 'aws-amplify-react'
 
-class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <S3Album path={''} picker />
-      </div>
-    );
-  }
+function App() {
+  return (
+    <div className="App">
+      <S3Album path={''} picker />
+    </div>
+  );
 }
 ```
 

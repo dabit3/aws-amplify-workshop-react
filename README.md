@@ -18,12 +18,12 @@ In this workshop we'll learn how to build cloud-enabled web applications with Gr
 - [React Native](https://github.com/dabit3/aws-amplify-workshop-react#react-native)
 - [Removing / Deleting Services](https://github.com/dabit3/aws-amplify-workshop-react#removing-services)
 
-## Redeeming our AWS Credit   
+<!-- ## Redeeming our AWS Credit   
 1. Visit the [AWS Console](https://console.aws.amazon.com/console).
 2. In the top right corner, click on __My Account__.
 ![](dashboard1.jpg)
 3. In the left menu, click __Credits__.
-![](dashboard2.jpg)
+![](dashboard2.jpg) -->
 
 ## Getting Started - Creating the React Application
 

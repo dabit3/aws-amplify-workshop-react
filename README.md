@@ -2,7 +2,7 @@
 
 In this workshop we'll learn how to build cloud-enabled web applications with GraphQL, React, & [AWS Amplify](https://aws-amplify.github.io/).
 
-![](header2.jpg)
+![](header.jpg)
 
 ### Topics we'll be covering:
 

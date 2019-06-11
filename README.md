@@ -120,7 +120,7 @@ To view the services created by Amplify at any time you can run the `console` co
 amplify console
 ```
 
-### Configuring the React applicaion
+### Configuring the React application
 
 Now, our resources are created & we can start using them!
 

@@ -632,6 +632,7 @@ amplify add function
 - Provide a friendly name for your resource to be used as a label for this category in the project: __basiclambda__
 - Provide the AWS Lambda function name: __basiclambda__
 - Choose the function template that you want to use: __Hello world function__
+- Do you want to access other resources created in this project from your Lambda function? __No__
 - Do you want to edit the local lambda function now? __Y__
 
 > This should open the function package located at __amplify/backend/function/basiclambda/src/index.js__.
@@ -658,8 +659,9 @@ Next, we can test this out by running:
 amplify function invoke basiclambda
 ```
 
+Using service: Lambda, provided by: awscloudformation
 - Provide the name of the script file that contains your handler function: __index.js__
--  Provide the name of the handler function to invoke: __handler__
+- Provide the name of the handler function to invoke: __handler__
 
 You'll notice the following output from your terminal:
 
@@ -697,6 +699,7 @@ amplify add function
 - Provide a friendly name for your resource to be used as a label for this category in the project: __cryptofunction__
 - Provide the AWS Lambda function name: __cryptofunction__
 - Choose the function template that you want to use: __Serverless express function (Integration with Amazon API Gateway)__
+- Do you want to access other resources created in this project from your Lambda function? __No__
 - Do you want to edit the local lambda function now? __Y__
 
 > This should open the function package located at __amplify/backend/function/cryptofunction/src/index.js__.
@@ -714,9 +717,10 @@ const axios = require('axios')
 
 app.get('/coins', function(req, res) {
   let apiUrl = `https://api.coinlore.com/api/tickers?start=0&limit=10`
-  
-  if (req.apiGateway && req.apiGateway.event.queryStringParameters) {
-    const { start = 0, limit = 10 } = req.apiGateway.event.queryStringParameters
+
+  console.log(req.query);
+  if (req && req.query) {
+    const { start = 0, limit = 10 } = req.query
     apiUrl = `https://api.coinlore.com/api/tickers/?start=${start}&limit=${limit}`
   }
   axios.get(apiUrl)
@@ -742,13 +746,14 @@ Next, change back into the root directory.
 Now we can test this function out:
 
 ```sh
+amplify function build
 amplify function invoke cryptofunction
 ```
 
 This will start up the node server. We can then make `curl` requests agains the endpoint:
 
 ```sh
-curl 'localhost:3000/coins'
+curl 'localhost:3000/coins?start=0&limit=1'
 ```
 
 If we'd like to test out the query parameters, we can update the __event.json__ to add the following:

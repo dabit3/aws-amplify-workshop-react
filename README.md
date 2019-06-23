@@ -780,7 +780,7 @@ amplify add api
 
 - Please select from one of the above mentioned services __REST__   
 - Provide a friendly name for your resource that will be used to label this category in the project: __cryptoapi__   
-- Provide a path, e.g. /items __/coins__   
+- Provide a path (e.g., /items) __/coins__   
 - Choose lambda source __Use a Lambda function already added in the current Amplify project__   
 - Choose the Lambda function to invoke by this path: __cryptofunction__   
 - Restrict API access __Y__
@@ -860,7 +860,7 @@ amplify add storage
  project: __YOURAPINAME__
 - Please provide bucket name: __YOURUNIQUEBUCKETNAME__
 - Who should have access: __Auth users only__
-- What kind of access do you want for Authenticated users __read/write__   
+- What kind of access do you want for Authenticated users __create/update, read, delete__   
 
 
 ```sh
@@ -894,11 +894,7 @@ function addToStorage() {
 
 This would create a folder called `javascript` in our S3 bucket & store a file called __MyReactComponent.js__ there with the code we specified in the second argument of `Storage.put`.
 
-To view the service you can run the `console` command the feature you'd like to view:
-
-```sh
-amplify console analytics
-```
+> To view the new bucket that was created in S3, go to the dashboard at [https://console.aws.amazon.com/s3](https://console.aws.amazon.com/s3). Also be sure that your region is set correctly.
 
 If we want to read everything from this folder, we can use `Storage.list`:
 
